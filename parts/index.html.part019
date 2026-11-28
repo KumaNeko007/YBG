@@ -3,7 +3,7 @@ hE3wlMfQcEmgZ0vONlVywqej947jH+jG/l2/6NP4gP8t/+rusSnCWxg9drxJgRFiz7sHnP9ebaFRAtDE
 
 <script>
 'use strict';
-const VERSION='v0.8.1', VERSION_NAME='衣装順第3稿・選択画面改善維持版';
+const VERSION='v0.10', VERSION_NAME='一括とりこみ・並べかえ・削除・自動配置版';
 /* Runtime CSS keeps earlier embedded asset chunks byte-identical to v0.5. */
 const wardLayoutV08=document.createElement('style');wardLayoutV08.id='v08-ward-layout';wardLayoutV08.textContent=`
 @media (orientation:portrait) {
@@ -226,7 +226,14 @@ const ALL_ADDED_COSTUME_IDS=[...V04_COSTUME_IDS,...V05_COSTUME_IDS];
 // Stable identifiers are independent of the provisional display sequence.
 const FIXED_ART_NUMBERS=Object.freeze({"basic":1,"sailor":2,"polka":3,"lace":4,"chiffon":5,"crystal":6,"lolita":7,"princess":8,"gothic":9,"maid":10,"hakama":11,"ynew5_cross":12,"ynew5_pearl":13,"v8331_star_smooth_onepiece":14,"v8331_star_satin":15,"v8331_star_simple":16,"chinaw":17,"gnew10":18,"ynew_tennis_white":19,"ynew2_tennis":20,"ynew2_marine":21,"ynew3_sport":22,"chinab":23,"v8331_ice_lace":24,"ynew5_cape":25,"gnew11":26,"gnew13":27,"gnew12":28,"gnew14":29,"gnew15":30,"gnew16":31,"gtear":32,"ynew_beige":33,"ynew2_gold":34,"ynew4_wrap":35,"ynew_maid":36,"gset09":37,"gset12":38,"gset13":39,"v8331_jewel_ice":40,"v8331_star_lace":41,"v8331_star_embroidery":42,"v8331_star_fine_lace":43,"gsmile":44,"gset01":45,"gset02":46,"gset03":47,"gset04":48,"gset05":49,"ynew_blossom":50,"ynew2_bob":51,"ynew2_rose":52,"ynew_lace":53,"ynew_tulle":54,"ynew2_ribbon":55,"ynew2_snow":56,"ynew4_icelace":57,"ynew3_lacebow":58,"ynew2_frill":59,"gset06":60,"gset07":61,"gset08":62,"gset10":63,"gset11":64,"gset14":65,"gset16":66,"gset15":67,"v8331_star_snowflower_bob":68,"v8331_star_snowflower_braids":69,"v8331_star_sheer_sleeveless":70,"v8331_star_halter":71,"ynew3_pearl":72,"ynew_moon":73,"ynew_sheer":74,"ynew_longveil":75,"goddess":76,"v8331_flower_veil":77,"v8331_star_veil":78,"v8331_star_jewel_veil":79,"v8331_star_short_veil":80,"v8331_star_ribbon":81,"v8331_star_open_sheer":82,"ynew_veil":83,"v04_img_9598":92,"v04_img_9594":93,"v04_img_9592":94,"v04_img_9588":95,"v04_img_9583":96,"v04_img_9577":97,"v04_img_9576":98,"v04_img_9575":99,"v04_img_9569":100,"v04_img_9566":101,"v05_img_9565":102,"v05_img_9561":103,"v05_img_9560":104,"v05_img_9551":105,"v05_img_9549":106,"v05_img_9531":107,"v05_img_9532":108,"v05_img_9538":109,"v05_img_9540":110,"v05_img_9544":111,"base_B":84,"base_A":85,"base_W":86,"base_N":87,"base_P":88,"base_ynew5_satin":89,"base_ynew5_braid":90,"base_ynew5_long":91});
 const WARD_DISPLAY_IDS=Object.freeze(["basic","sailor","polka","lace","chiffon","crystal","lolita","princess","gothic","maid","hakama","chinaw","chinab","gset15","ynew_maid","gset09","gnew10","ynew_beige","gsmile","gset01","gset02","gset05","ynew_blossom","ynew2_rose","ynew2_ribbon","ynew2_frill","ynew3_lacebow","ynew4_wrap","ynew_lace","ynew_tulle","ynew5_cape","ynew2_bob","v8331_star_snowflower_bob","v8331_star_snowflower_braids","v05_img_9531","v05_img_9532","ynew3_pearl","ynew_sheer","ynew_longveil","v8331_flower_veil","ynew2_tennis","ynew_tennis_white","gnew13","gnew11","ynew2_marine","ynew3_sport","v8331_ice_lace","gnew12","v8331_jewel_ice","ynew2_snow","ynew4_icelace","v05_img_9551","v05_img_9549","v04_img_9598","v05_img_9538","gnew14","gnew15","gnew16","gset12","gset13","v05_img_9540","v05_img_9544","ynew2_gold","gtear","ynew5_cross","ynew5_pearl","v04_img_9594","v04_img_9592","v04_img_9588","v04_img_9583","v04_img_9577","v04_img_9576","v04_img_9575","v04_img_9569","v04_img_9566","v05_img_9565","v05_img_9561","v05_img_9560","v8331_star_smooth_onepiece","v8331_star_satin","v8331_star_simple","v8331_star_lace","v8331_star_embroidery","v8331_star_fine_lace","v8331_star_sheer_sleeveless","v8331_star_halter","v8331_star_veil","v8331_star_jewel_veil","v8331_star_short_veil","v8331_star_ribbon","v8331_star_open_sheer","gset03","gset04","gset06","gset07","gset10","gset11","gset16","ynew_moon","ynew_veil","gset08","gset14","goddess"]);
-const ORDERED_COSTUMES=()=>[...WARD_DISPLAY_IDS.map(id=>CMAP[id]),...(secret2Open()?[BARE]:[])].filter(cosOpen);
+const MY_COSTUMES=[];/* v0.9: とりこんだ自作衣装（この端末の IndexedDB から 起動時に登録） */
+/* v0.9.1: 実装ずみの とりこみ衣装（番号つき）と、iPhone で 次の版を つくるための ビルド情報（tools/build_html.py が 書きこむ） */
+const BUILTIN_MY=/*__BUILTIN_MY__*/[]/*__BUILTIN_MY_END__*/;
+const BUILD_INFO=/*__BUILD_INFO__*/{"v":1,"partBytes":16777216,"chunkStart":57353,"assetScripts":90,"assetEnd":304894281,"T":301989888,"mid":[3932612722,3555796672,2251140170,513068378,3728952793,3239204692,1986920661,3943532757],"postPrefix":"\n<script>","postSuffix":"<\/script>\n<\/body>\n<\/html>\n","partGit":["ebe88e149cc499b4e14a0231d4f6e057febfa00d","6df7207afc439fef8c0dd82ecacb62431c2cce24","5fc7cf6db2044b07538877d62d6897bbb51d6820","1451d668a51d184c716b11ab2c71a07c8385b7a8","d05e07625e307fa97551cfd783f4d7925eb8b07b","bfa877625361b25a14dfd92908833221569b5933","f3f9d0b06f1ae3df9cd04c067caeff7389d4342b","cd8a3bec597af84324f8f1f0615de4b492cbcf76","f2a0ce0e7e58ceaa35b962e108c2ce326990c30b","2e5d20a05021fce41271d62336f4225b9deb5b51","ecbd965ba3161b4ba4c474273b0238985a187f22","d1d5ffa8a3c354343977c2a41fd85ffd8cb5096d","e40f7bcc2895675e4a840b817a17e888332cf4b3","9bfbe350e7465ecc53ce7217407d44a5b0ca426f","ea6dba359b5922302685d0932645a69d32a9730e","7931fcc5d221bc857c3b5f6ccf47b044d5901524","be1806ed840acf7d4e43b3eaeafa7d49c6b6ff31","971193c13a729ffac3fc485d3707ec25a23b4721"],"partMid":[[3858967302,2060613960,1900405040,737359319,687950022,3905421837,2837246756,2864590463],[1442529503,4208158663,1472146482,2414573872,406709602,1753613434,2403140833,2297785694],[3889050419,2983159209,300870240,1081022117,2678341940,1534298215,1369739,2540518450],[3077777100,1003994743,998693662,4159449027,2289401710,2031192590,954087704,2007894979],[371715584,2364257223,235209990,1992855800,3233360039,2403500028,2284753884,498733282],[673441359,225063982,4131450948,3038611560,2270989757,4094016172,2656323338,762523781],[2169090501,1991645312,4245952703,1102688538,698152703,920695216,4177895081,4290498244],[552230197,2295124065,3651505408,4274983973,1348642976,2484566374,623179752,919316389],[3319326640,643027579,2111181256,697723792,4083801728,2484872203,2200256225,3275760826],[577725791,308468377,248661319,20807845,2038855888,1867771446,194342004,4273378429],[3576145714,1420923804,2711054674,4141488479,3411147177,1459547103,2033170378,986872166],[50421104,1230899801,2765110897,3841067198,2227787071,3585392032,1974717030,2379885975],[3964719516,2243393198,2095345072,292027448,1906521107,3017203966,2324263787,2245538393],[2265448461,2846490347,635441714,2905590155,3958039755,3091973817,2060187846,3754516425],[1660049065,3116190530,533650132,2769064426,1189223777,367170231,2297114315,949568568],[1428642183,2101268825,2441990076,195053485,3652340628,2111426862,1170170303,1436205369],[1541400646,3987477735,839518245,3009098853,1068540891,3442667579,1737520967,4238220442],[3932612722,3555796672,2251140170,513068378,3728952793,3239204692,1986920661,3943532757]]}/*__BUILD_INFO_END__*/;
+const MY_NUMBERS={};
+/* v0.10: 衣装の 並び（order）・第2のひみつ（secret2）・けした衣装（deleted）・番号（numbers）の 上書き。iPhone の「実装」が 書きこむ */
+const LAYOUT_OVERRIDE=/*__LAYOUT__*/null/*__LAYOUT_END__*/;
+const ORDERED_COSTUMES=()=>[...myOrderIds().map(id=>CMAP[id]),...(secret2Open()?[BARE]:[])].filter(c=>c&&cosOpen(c));
 const condText=c=>c===BARE||c.special||c.secret2?'':c.unlock===0?'さいしょから':c.unlock!=null?`ステージ${c.unlock}クリア`:`${c.pts}ポイント`;
 const MOVED_BASE_IDS=['ynew5_satin','ynew5_braid','ynew5_long'];
 const BASE_NAME={B:'シンプル',A:'リボン',W:'水彩',N:'淡彩',P:'ピンク',ynew5_satin:'白絹のスケート',ynew5_braid:'桜色の三つ編み',ynew5_long:'桜の長三つ編み'};
@@ -1480,6 +1487,7 @@ async function selectWard(id){if(!ORDERED_COSTUMES().some(c=>c.id===id))return;c
   const ptsInline=`<span class="wardPtsInline">${c.secret2?'第2のひみつ・必要ptなし':c.pts!=null?'必要ごほうび '+c.pts+'pt':'必要ごほうび 0pt'}</span>`;
   $('wardInfo').innerHTML=shut?`<div class="wardSummary"><b>🔒 まだ 着られない 衣装</b>${ptsInline}</div><div class="wq">入手：${q}${c.pts!=null?'（ステージ10クリア後）':''}</div>`
     :`<div class="wardSummary"><b>${c.name.replace('\n','')}${c===BARE?'（'+BASE_NAME[save.baseArt]+'）':''}</b>${ptsInline}</div>${c.star?`<span class="stars">${starStr(c.star)}</span>`:''}<div class="wa">${c.ab}${!c.special&&c!==BARE?'<br><span class="wk">'+atkText(c)+'</span>':''}${c.special?'<br><small>女神様の姿で あそべます</small>':''}${c===BARE?'<br><small>（絵は せってい で えらべます）</small>':''}</div>`;
+  if(CMAP[id]&&CMAP[id].mine)myWardExtras(id);
   $('btnWardOk').disabled=lock;$('btnWardOk').textContent=shut?'まだ 着られません':c.special&&!c.secret2?'へんしん専用です':c===BARE?'これに きめる（ハード）':'これに きめる';
   $('wardInfo').insertAdjacentHTML('beforeend','<div id="wardLoad" style="font-size:14px;color:#8a6a4a">よみこみ中…</div>');
   await Promise.all([loadImg(yInfo(id).file),...(wardFrontFile(id)?[loadImg(wardFrontFile(id))]:[])]);if(seq!==wardSequence)return;const wl=$('wardLoad');if(wl)wl.remove();drawWard(0);}
@@ -1785,7 +1793,7 @@ async function openReady(i){readyIdx=i;showOnly('scrReady');
     ?`にゃ！ しゅっぱつ前に、衣装は えらんだ？ いまは『${nm}』だよ。${tip?'<br>'+tip:''}`
     :`出発の前に、衣装は 選びましたか？ いまは『${nm}』ですね。${tip?'<br>'+tip.replace('着られるわ！','着られますよ。'):''}`)+(hardMode()?`<br><small>素体は 衣装の力が ないので むずかしいよ。</small>`:'');
   drawNarrator($('readyFace'),who);
-  await loadImg(ATLAS.thumbs.file);const cv=$('readyCos'),x=cv.getContext('2d'),f=thumbFrame(thumbId(save.costume)),ti=imgOf(ATLAS.thumbs.file);x.clearRect(0,0,230,244);if(ti)x.drawImage(ti,f.sx,f.sy,f.sw,f.sh,0,0,230,244);
+  await loadImg(ATLAS.thumbs.file);const cv=$('readyCos'),x=cv.getContext('2d'),f=thumbFrame(thumbId(save.costume)),ti=imgOf(ATLAS.thumbs.file);x.clearRect(0,0,230,244);if(f.file!==ATLAS.thumbs.file){await loadImg(f.file);x.imageSmoothingQuality='high';drawYasukoDetail(x,f,0,0,230,244);}else if(ti)x.drawImage(ti,f.sx,f.sy,f.sw,f.sh,0,0,230,244);
   $('readyCosName').innerHTML=`いまの 衣装<br>${nm}${c.star?` <span class="stars">${starStr(c.star)}</span>`:''}`;}
 $('btnReadyGo').onclick=()=>{showOnly(null);startStage(readyIdx);};
 $('btnReadyWard').onclick=()=>openWard('ready');
@@ -2174,7 +2182,7 @@ let viewerCostumeId=null,viewerEquipBusy=false;
 function viewableCostumeArts(){return ORDERED_COSTUMES().flatMap(c=>c===BARE?Object.keys(BASE_NAME).map(id=>'base_'+id):[c.id]);}
 function canWearArt(id){return !!id&&viewableCostumeArts().includes(id)&&(id.startsWith('base_')?secret2Open()&&Object.prototype.hasOwnProperty.call(BASE_NAME,id.slice(5)):cosOpen(CMAP[id])&&(!CMAP[id].special||CMAP[id].secret2));}
 // Stable numbers follow the complete costume ledger, not the unlocked subset.
-function viewerArtNumber(id){return Object.prototype.hasOwnProperty.call(FIXED_ART_NUMBERS,id)?FIXED_ART_NUMBERS[id]:null;}
+function viewerArtNumber(id){const o=myNumbers();if(Object.prototype.hasOwnProperty.call(o,id))return o[id];return Object.prototype.hasOwnProperty.call(FIXED_ART_NUMBERS,id)?FIXED_ART_NUMBERS[id]:Object.prototype.hasOwnProperty.call(MY_NUMBERS,id)?MY_NUMBERS[id]:null;}
 function viewerArtName(id){return id.startsWith('base_')?BASE_NAME[id.slice(5)]:CMAP[id].name.replace('\n','');}
 function refreshViewerNav(){const nav=$('artViewerNav'),valid=viewerCostumeId&&viewableCostumeArts().includes(viewerCostumeId);nav.classList.toggle('hidden',!valid);$('artViewerWear').disabled=viewerEquipBusy||!canWearArt(viewerCostumeId);const current=save.costume==='base'?'base_'+save.baseArt:save.costume;$('artViewerWear').textContent=current===viewerCostumeId?'着用中':'この衣装にする';}
 function setViewerImage(src,name){const seq=++artViewerSeq;const no=viewerCostumeId?viewerArtNumber(viewerCostumeId):null;$('artViewerName').textContent=no===null?name:`No.${no} ${name}`;artImage.alt=name;artStage.dataset.loading='1';$('artViewerStatus').textContent='絵を よみこんでいます…';viewerGesture.reset();artImage.onload=()=>{if(seq!==artViewerSeq)return;fitArtViewer();artStage.dataset.loading='0';$('artViewerStatus').textContent='';};artImage.onerror=()=>{if(seq===artViewerSeq)$('artViewerStatus').textContent='絵を よみこめませんでした';};artImage.src=src;if(artImage.complete&&artImage.naturalWidth)artImage.onload();refreshViewerNav();}
@@ -2338,8 +2346,1503 @@ function relayoutMenus(){sizeManualArt();try{if(!$('scrTitle').classList.contain
 if(window.visualViewport){let vt=0;const vr=()=>{clearTimeout(vt);vt=setTimeout(()=>{const h=Math.round(visualViewport.height);if(Math.abs(h-VH)>2||Math.abs(window.innerWidth-VW)>2)resize();else fitViewport();},60);};visualViewport.addEventListener('resize',vr);visualViewport.addEventListener('scroll',vr);}
 window.addEventListener('orientationchange',()=>setTimeout(resize,300));
 
+/* やっこの冒険 v0.9 — 衣装とりこみエンジン（ゲーム内で動く切り抜き処理）
+   tools/cut_original.py（オフライン版）の手順を ブラウザ用に移植・自動化したもの。
+   - 生成による描き直しはしない。原画の画素をそのまま使い、背景だけを透明にする。
+   - 純粋な配列処理だけで書く（Web Worker でも メインスレッドでも node でも動く）。
+   公開API: CostumeCutEngine() → {detect, extract, features, assign, ...}
+   画像は {w,h,data:Uint8ClampedArray(RGBA)} で受け渡す。 */
+/* やっこの冒険 v0.9 — 衣装とりこみエンジン（ゲーム内で動く切り抜き処理）
+   tools/cut_original.py（オフライン版）の手順を ブラウザ用に移植・自動化したもの。
+   - 生成による描き直しはしない。原画の画素をそのまま使い、背景だけを透明にする。
+   - 純粋な配列処理だけで書く（Web Worker でも メインスレッドでも node でも動く）。
+   公開API: CostumeCutEngine() → {detect, extract, features, assign, ...}
+   画像は {w,h,data:Uint8ClampedArray(RGBA)} で受け渡す。 */
+function CostumeCutEngine(){
+'use strict';
+const ENGINE_VERSION='cut-v010';
+/* ---------------- 基本の画像演算 ---------------- */
+function refl(i,n){while(i<0||i>=n){if(i<0)i=-i-1;if(i>=n)i=2*n-i-1;}return i;}
+function gaussian(src,w,h,sigma){
+  if(!(sigma>0))return Float32Array.from(src);
+  if(sigma>3.5)return boxGauss(src,w,h,sigma);
+  const r=Math.max(1,Math.ceil(sigma*3.5)),k=new Float32Array(2*r+1);let s=0;
+  for(let i=-r;i<=r;i++){const v=Math.exp(-0.5*i*i/(sigma*sigma));k[i+r]=v;s+=v;}for(let i=0;i<k.length;i++)k[i]/=s;
+  const tmp=new Float32Array(w*h),out=new Float32Array(w*h);
+  for(let y=0;y<h;y++){const o=y*w;for(let x=0;x<w;x++){let a=0;
+    if(x>=r&&x<w-r){for(let j=-r;j<=r;j++)a+=k[j+r]*src[o+x+j];}else{for(let j=-r;j<=r;j++)a+=k[j+r]*src[o+refl(x+j,w)];}tmp[o+x]=a;}}
+  const acc=new Float64Array(w);
+  for(let y=0;y<h;y++){acc.fill(0);for(let j=-r;j<=r;j++){const kk=k[j+r],o=refl(y+j,h)*w;for(let x=0;x<w;x++)acc[x]+=kk*tmp[o+x];}
+    const o=y*w;for(let x=0;x<w;x++)out[o+x]=acc[x];}
+  return out;}
+function boxMean(src,w,h,r){
+  if(r<1)return Float32Array.from(src);
+  const tmp=new Float32Array(w*h),out=new Float32Array(w*h);
+  for(let y=0;y<h;y++){const o=y*w;let s=0,c=0;for(let x=0;x<=r&&x<w;x++){s+=src[o+x];c++;}
+    for(let x=0;x<w;x++){tmp[o+x]=s/c;const a=x+r+1,b=x-r;if(a<w){s+=src[o+a];c++;}if(b>=0){s-=src[o+b];c--;}}}
+  const S=new Float64Array(w),C=new Int32Array(1);
+  let c=0;S.fill(0);for(let y=0;y<=r&&y<h;y++){const o=y*w;for(let x=0;x<w;x++)S[x]+=tmp[o+x];c++;}
+  for(let y=0;y<h;y++){const o=y*w;for(let x=0;x<w;x++)out[o+x]=S[x]/c;const a=y+r+1,b=y-r;
+    if(a<h){const oa=a*w;for(let x=0;x<w;x++)S[x]+=tmp[oa+x];c++;}if(b>=0){const ob=b*w;for(let x=0;x<w;x++)S[x]-=tmp[ob+x];c--;}}
+  C[0]=c;return out;}
+function boxGauss(src,w,h,sigma){const wd=Math.sqrt(4*sigma*sigma+1),r=Math.max(1,Math.round((wd-1)/2));return boxMean(boxMean(boxMean(src,w,h,r),w,h,r),w,h,r);}
+/* 正方形窓の最大・最小フィルタ（単調キュー, O(n)） */
+function extFilter(src,w,h,r,isMax){
+  const tmp=new Float32Array(w*h),out=new Float32Array(w*h),q=new Int32Array(Math.max(w,h)+2);
+  const line=(get,set,n)=>{let hd=0,tl=0;let j=0;
+    for(let i=0;i<n;i++){const hi=Math.min(n-1,i+r);while(j<=hi){const v=get(j);if(isMax){while(tl>hd&&get(q[tl-1])<=v)tl--;}else{while(tl>hd&&get(q[tl-1])>=v)tl--;}q[tl++]=j;j++;}
+      while(q[hd]<i-r)hd++;set(i,get(q[hd]));}};
+  for(let y=0;y<h;y++){const o=y*w;line(x=>src[o+x],(x,v)=>{tmp[o+x]=v;},w);}
+  for(let x=0;x<w;x++){line(y=>tmp[y*w+x],(y,v)=>{out[y*w+x]=v;},h);}
+  return out;}
+/* 二値: L1距離（ひし形 = scipy の iterations と同じ形） */
+function distL1(mask,w,h,edgeIsBg){const n=w*h,d=new Int32Array(n),INF=1<<29;
+  for(let i=0;i<n;i++)d[i]=mask[i]?0:INF;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;let v=d[i];if(v){if(x>0&&d[i-1]+1<v)v=d[i-1]+1;if(y>0&&d[i-w]+1<v)v=d[i-w]+1;d[i]=v;}}
+  for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(v){if(x<w-1&&d[i+1]+1<v)v=d[i+1]+1;if(y<h-1&&d[i+w]+1<v)v=d[i+w]+1;d[i]=v;}}
+  if(edgeIsBg){for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,e=Math.min(x+1,w-x,y+1,h-y);if(e<d[i])d[i]=e;}}
+  return d;}
+function dilate(m,w,h,k){if(k<=0)return Uint8Array.from(m);const d=distL1(m,w,h,false),o=new Uint8Array(w*h);for(let i=0;i<o.length;i++)o[i]=d[i]<=k?1:0;return o;}
+function erode(m,w,h,k){if(k<=0)return Uint8Array.from(m);const inv=new Uint8Array(w*h);for(let i=0;i<inv.length;i++)inv[i]=m[i]?0:1;const d=distL1(inv,w,h,true),o=new Uint8Array(w*h);for(let i=0;i<o.length;i++)o[i]=m[i]&&d[i]>k?1:0;return o;}
+function opening(m,w,h,k){return dilate(erode(m,w,h,k),w,h,k);}
+function closing(m,w,h,k){/* 画像の外は前景あつかいしない */const d=dilate(m,w,h,k),inv=new Uint8Array(w*h);for(let i=0;i<inv.length;i++)inv[i]=d[i]?0:1;const dd=distL1(inv,w,h,false),o=new Uint8Array(w*h);for(let i=0;i<o.length;i++)o[i]=dd[i]>k?1:0;return o;}
+/* 4近傍ラベリング（union-find） */
+function label(m,w,h){const n=w*h,lab=new Int32Array(n),par=[0];
+  const find=a=>{while(par[a]!==a){par[a]=par[par[a]];a=par[a];}return a;};
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(!m[i])continue;const L=x>0?lab[i-1]:0,U=y>0?lab[i-w]:0;
+    if(L&&U){const a=find(L),b=find(U);lab[i]=a<b?a:b;if(a!==b){if(a<b)par[b]=a;else par[a]=b;}}else if(L)lab[i]=L;else if(U)lab[i]=U;else{const id=par.length;par.push(id);lab[i]=id;}}
+  const map=new Int32Array(par.length);let cnt=0;for(let i=1;i<par.length;i++){const r=find(i);if(!map[r])map[r]=++cnt;map[i]=map[r];}
+  const size=new Int32Array(cnt+1),bx=new Int32Array((cnt+1)*4);for(let c=1;c<=cnt;c++){bx[c*4]=w;bx[c*4+1]=h;bx[c*4+2]=-1;bx[c*4+3]=-1;}
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(!lab[i])continue;const c=map[lab[i]];lab[i]=c;size[c]++;const b=c*4;if(x<bx[b])bx[b]=x;if(y<bx[b+1])bx[b+1]=y;if(x>bx[b+2])bx[b+2]=x;if(y>bx[b+3])bx[b+3]=y;}
+  return{lab,n:cnt,size,box:bx};}
+/* 種から mask 内を 4近傍で広げる（scipy binary_propagation 相当）。limit>0 なら その歩数まで */
+function propagate(seed,mask,w,h,limit){const n=w*h,out=Uint8Array.from(seed);let q=new Int32Array(n),qn=0;
+  for(let i=0;i<n;i++)if(out[i])q[qn++]=i;let steps=0,start=0;
+  while(start<qn){if(limit&&steps>=limit)break;const end=qn;
+    for(let t=start;t<end;t++){const i=q[t],x=i%w;
+      if(x>0&&!out[i-1]&&mask[i-1]){out[i-1]=1;q[qn++]=i-1;}if(x<w-1&&!out[i+1]&&mask[i+1]){out[i+1]=1;q[qn++]=i+1;}
+      if(i>=w&&!out[i-w]&&mask[i-w]){out[i-w]=1;q[qn++]=i-w;}if(i<n-w&&!out[i+w]&&mask[i+w]){out[i+w]=1;q[qn++]=i+w;}}
+    start=end;steps++;}
+  return out;}
+function borderFlood(mask,w,h){const seed=new Uint8Array(w*h);
+  for(let x=0;x<w;x++){if(mask[x])seed[x]=1;const j=(h-1)*w+x;if(mask[j])seed[j]=1;}
+  for(let y=0;y<h;y++){const a=y*w,b=y*w+w-1;if(mask[a])seed[a]=1;if(mask[b])seed[b]=1;}
+  return propagate(seed,mask,w,h,0);}
+function fillHoles(fg,w,h){const inv=new Uint8Array(w*h);for(let i=0;i<inv.length;i++)inv[i]=fg[i]?0:1;const out=borderFlood(inv,w,h),o=new Uint8Array(w*h);for(let i=0;i<o.length;i++)o[i]=out[i]?0:1;return o;}
+const lumOf=(r,g,b)=>0.299*r+0.587*g+0.114*b;
+function median(a){if(!a.length)return 0;const s=Float64Array.from(a).sort();return s[s.length>>1];}
+
+/* ---------------- 縮小（検出用・面積平均） ---------------- */
+function shrink(img,k){const W=img.w,H=img.h,w=Math.max(1,Math.floor(W/k)),h=Math.max(1,Math.floor(H/k)),src=img.data;
+  const R=new Float32Array(w*h),G=new Float32Array(w*h),B=new Float32Array(w*h),A=new Float32Array(w*h),kk=k*k;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){let r=0,g=0,b=0,a=0;for(let j=0;j<k;j++){let o=((y*k+j)*W+x*k)*4;for(let i=0;i<k;i++,o+=4){r+=src[o];g+=src[o+1];b+=src[o+2];a+=src[o+3];}}
+    const p=y*w+x;R[p]=r/kk;G[p]=g/kk;B[p]=b/kk;A[p]=a/kk;}
+  return{w,h,R,G,B,A,k};}
+
+/* ---------------- 背景の種類を しらべる ---------------- */
+function analyzeBackground(sm){const{w,h,R,G,B,A}=sm,rw=Math.max(2,Math.round(Math.min(w,h)*0.012)),ring=[];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(x<rw||y<rw||x>=w-rw||y>=h-rw)ring.push(y*w+x);}
+  let tr=0,anyT=0;for(const i of ring)if(A[i]<16)tr++;for(let i=0;i<w*h;i++)if(A[i]<16)anyT++;
+  if(tr/ring.length>0.3||anyT/(w*h)>0.15)return{mode:'alpha'};
+  const lr=ring.map(i=>lumOf(R[i],G[i],B[i])),chr=ring.map(i=>Math.max(R[i],G[i],B[i])-Math.min(R[i],G[i],B[i]));
+  /* 市松模様（にせの透明）: 低彩度で 明るさが2つの山 */
+  const low=ring.filter((i,j)=>chr[j]<14);
+  if(low.length>ring.length*0.7){const L=low.map(i=>lumOf(R[i],G[i],B[i]));let c1=Math.min(...L.slice(0,4000)),c2=Math.max(...L.slice(0,4000));
+    for(let it=0;it<12;it++){let s1=0,n1=0,s2=0,n2=0;for(const v of L){if(Math.abs(v-c1)<Math.abs(v-c2)){s1+=v;n1++;}else{s2+=v;n2++;}}if(n1)c1=s1/n1;if(n2)c2=s2/n2;}
+    let n1=0,n2=0,e=0;for(const v of L){const a=Math.abs(v-c1),b=Math.abs(v-c2);if(a<b){n1++;e+=a;}else{n2++;e+=b;}}
+    const sep=Math.abs(c2-c1);if(sep>=10&&sep<=110&&n1>L.length*0.2&&n2>L.length*0.2&&e/L.length<Math.min(6,sep*0.18)){
+      const col=(c)=>{const p=low.filter(i=>Math.abs(lumOf(R[i],G[i],B[i])-c)<sep*0.3);return[median(p.map(i=>R[i])),median(p.map(i=>G[i])),median(p.map(i=>B[i]))];};
+      return{mode:'checker',c1:col(Math.min(c1,c2)),c2:col(Math.max(c1,c2)),noise:2};}}
+  const bc=[median(ring.map(i=>R[i])),median(ring.map(i=>G[i])),median(ring.map(i=>B[i]))],bl=lumOf(...bc);
+  const dev=ring.map(i=>Math.max(Math.abs(R[i]-bc[0]),Math.abs(G[i]-bc[1]),Math.abs(B[i]-bc[2]))).filter(v=>v<40);
+  const noise=dev.length?median(dev):3;
+  return{mode:bl>=150?'light':bl<=70?'dark':'color',color:bc,noise};}
+
+/* 局所の紙色（ぼかし・ビネット・グラデーションの背景にも追従） */
+function paperMap(sm,bg){const{w,h,R,G,B}=sm,n=w*h;if(bg.mode==='alpha'||bg.mode==='checker')return null;
+  const c=bg.color,T=bg.mode==='light'?34:bg.mode==='dark'?40:46;const L=new Float32Array(n);for(let i=0;i<n;i++)L[i]=lumOf(R[i],G[i],B[i]);
+  const gx=new Float32Array(n);for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){const i=y*w+x;gx[i]=Math.abs(L[i+1]-L[i-1])+Math.abs(L[i+w]-L[i-w]);}
+  const wt=new Float32Array(n);for(let i=0;i<n;i++){const dd=Math.max(Math.abs(R[i]-c[0]),Math.abs(G[i]-c[1]),Math.abs(B[i]-c[2])),mn=Math.min(R[i],G[i],B[i]),cr=Math.max(R[i],G[i],B[i])-mn;wt[i]=(dd<T||(bg.mode==='light'&&mn>236&&cr<12))&&gx[i]<10?1:0;}
+  /* 紙らしい画素のうち 広い面だけ（人物の中の白い布は混ぜない） */
+  const lb=label(wt,w,h);const keep=new Uint8Array(lb.n+1);for(let k=1;k<=lb.n;k++)keep[k]=lb.size[k]>n*0.004?1:0;for(let i=0;i<n;i++)wt[i]=wt[i]&&keep[lb.lab[i]]?1:0;
+  const sg=Math.max(3,Math.min(w,h)*0.03),sg2=Math.max(8,Math.min(w,h)*0.12);
+  const den=boxGauss(wt,w,h,sg),den2=boxGauss(wt,w,h,sg2);const P=[R,G,B].map((ch,ci)=>{const m=new Float32Array(n);for(let i=0;i<n;i++)m[i]=ch[i]*wt[i];
+    const a=boxGauss(m,w,h,sg),b=boxGauss(m,w,h,sg2),o=new Float32Array(n);
+    for(let i=0;i<n;i++){const v1=a[i]/(den[i]+1e-4),v2=den2[i]>0.02?b[i]/(den2[i]+1e-4):c[ci],t=Math.min(1,den[i]/0.05);o[i]=t*v1+(1-t)*v2;}return o;});
+  return{w,h,R:P[0],G:P[1],B:P[2]};}
+function samplePaper(pm,k,X,Y){/* 原寸座標 → 縮小座標で双一次補間 */const fx=Math.min(pm.w-1,Math.max(0,(X+0.5)/k-0.5)),fy=Math.min(pm.h-1,Math.max(0,(Y+0.5)/k-0.5));
+  const x0=fx|0,y0=fy|0,x1=Math.min(pm.w-1,x0+1),y1=Math.min(pm.h-1,y0+1),tx=fx-x0,ty=fy-y0,i00=y0*pm.w+x0,i10=y0*pm.w+x1,i01=y1*pm.w+x0,i11=y1*pm.w+x1;
+  const f=c=>(c[i00]*(1-tx)+c[i10]*tx)*(1-ty)+(c[i01]*(1-tx)+c[i11]*tx)*ty;return[f(pm.R),f(pm.G),f(pm.B)];}
+
+/* 画素ごとの「紙からの差」と 背景候補 */
+function darknessAndCand(R,G,B,A,P,w,h,bg,sigma){const n=w*h,d=new Float32Array(n),ch=new Float32Array(n);
+  if(bg.mode==='alpha'){const cand=new Uint8Array(n);for(let i=0;i<n;i++){const v=Math.min(1,Math.max(0,(A[i]-8)/238))*255;d[i]=v;cand[i]=v<128?1:0;}return{d,cand,chroma:ch};}
+  for(let i=0;i<n;i++){const r=R[i],g=G[i],b=B[i];ch[i]=Math.max(r,g,b)-Math.min(r,g,b);
+    if(bg.mode==='checker'){const a=bg.c1,c=bg.c2;d[i]=Math.min(Math.max(Math.abs(r-a[0]),Math.abs(g-a[1]),Math.abs(b-a[2])),Math.max(Math.abs(r-c[0]),Math.abs(g-c[1]),Math.abs(b-c[2])));}
+    else if(bg.mode==='dark'){d[i]=Math.max(0,r-P[0][i],g-P[1][i],b-P[2][i]);}
+    else if(bg.mode==='light'){d[i]=Math.max(Math.abs(P[0][i]-r)*(r>P[0][i]?0.5:1),Math.abs(P[1][i]-g)*(g>P[1][i]?0.5:1),Math.abs(P[2][i]-b)*(b>P[2][i]?0.5:1));}
+    else d[i]=Math.max(Math.abs(r-P[0][i]),Math.abs(g-P[1][i]),Math.abs(b-P[2][i]));}
+  const db=gaussian(d,w,h,sigma),cb=gaussian(ch,w,h,sigma),cand=new Uint8Array(n),nz=bg.noise||2.5;
+  if(bg.mode==='dark'){const T=Math.max(26,nz*4);for(let i=0;i<n;i++)cand[i]=db[i]<T?1:0;const c2=closing(cand,w,h,1);for(let i=0;i<n;i++)cand[i]=cand[i]|c2[i]|(d[i]<12?1:0);}
+  else if(bg.mode==='checker'){for(let i=0;i<n;i++)cand[i]=db[i]<14&&cb[i]<16?1:0;}
+  else{const T=bg.mode==='light'?Math.min(14,Math.max(10,nz*3)):Math.min(22,Math.max(12,nz*3.2));
+    for(let i=0;i<n;i++){const pcv=Math.max(P[0][i],P[1][i],P[2][i])-Math.min(P[0][i],P[1][i],P[2][i]);
+      cand[i]=(db[i]<T&&Math.abs(cb[i]-pcv)<18)||(d[i]<T*0.6&&Math.abs(ch[i]-pcv)<12)?1:0;}}
+  return{d,cand,chroma:ch};}
+
+/* ---------------- 人物を さがす ---------------- */
+function detect(img,opt){opt=opt||{};const W=img.w,H=img.h,k=Math.max(1,Math.round(Math.sqrt(W*H/1.4e6)));
+  const sm=shrink(img,k),w=sm.w,h=sm.h,n=w*h;const bg=opt.bgMode&&opt.bgMode!=='auto'?forceBg(sm,opt.bgMode):analyzeBackground(sm);
+  const pm=paperMap(sm,bg),P=pm?[pm.R,pm.G,pm.B]:null;const dc=darknessAndCand(sm.R,sm.G,sm.B,sm.A,P,w,h,bg,Math.max(0.6,1.0/k));
+  const bgm=borderFlood(dc.cand,w,h);
+  /* 飾り枠の内側の紙（外とつながらない 広い紙）も 背景 */
+  if(bg.mode!=='alpha'){const lc=label(dc.cand,w,h);for(let i=0;i<n;i++){const c=lc.lab[i];if(c&&!bgm[i]&&lc.size[c]>=n*0.025)bgm[i]=1;}}
+  let fg=new Uint8Array(n);for(let i=0;i<n;i++)fg[i]=bgm[i]?0:1;
+  /* 画面の ふちを囲む 細い飾り枠・罫線は 人物ではない */
+  {const lf=label(fg,w,h);for(let c=1;c<=lf.n;c++){const b=lf.box.subarray(c*4,c*4+4),bw=b[2]-b[0]+1,bh=b[3]-b[1]+1;if(bw>w*0.6&&bh>h*0.6&&lf.size[c]<bw*bh*0.15){for(let i=0;i<n;i++)if(lf.lab[i]===c)fg[i]=0;}}}
+  /* 小さなごみ */
+  {const lb=label(fg,w,h),mn=Math.max(3,n*0.00004);for(let i=0;i<n;i++)if(fg[i]&&lb.size[lb.lab[i]]<mn)fg[i]=0;}
+  const rd=Math.max(1,Math.round(Math.min(w,h)*0.004)),dl=dilate(fg,w,h,rd),lb=label(dl,w,h);
+  let comps=[];for(let c=1;c<=lb.n;c++){const b=lb.box.subarray(c*4,c*4+4);comps.push({id:c,x0:b[0],y0:b[1],x1:b[2]+1,y1:b[3]+1,area:0});}
+  {const ar=new Float64Array(lb.n+1);for(let i=0;i<n;i++)if(fg[i])ar[lb.lab[i]]++;comps.forEach(c=>{c.area=ar[c.id];c.w=c.x1-c.x0;c.h=c.y1-c.y0;});}
+  comps=comps.filter(c=>c.area>0);
+  const maxA=Math.max(...comps.map(c=>c.area),1),maxH=Math.max(...comps.map(c=>c.h),1);
+  let big=comps.filter(c=>c.h>=0.2*maxH&&c.area>=0.015*maxA&&c.h>=h*0.08);
+  const hs=big.map(c=>c.h).sort((a,b)=>a-b),medH=hs.length?hs[Math.floor(hs.length/2)]:maxH;
+  let figs=big.filter(c=>c.h>=0.5*medH);
+  /* 髪や手が となりの人物と つながった かたまりを 分ける（切れ目が 細く、両側の量が 同じくらいの ときだけ） */
+  const out=[];
+  if(opt.grid&&opt.grid.rows>0&&opt.grid.cols>0){/* 並び方の指定: 等分の升目ごとに 1人 */const R=opt.grid.rows,Cn=opt.grid.cols;
+    for(let r=0;r<R;r++)for(let c=0;c<Cn;c++){const cx0=Math.round(c*w/Cn),cx1=Math.round((c+1)*w/Cn),cy0=Math.round(r*h/R),cy1=Math.round((r+1)*h/R);let x0=1e9,y0=1e9,x1=-1,y1=-1,cnt=0;
+      for(let y=cy0;y<cy1;y++)for(let x=cx0;x<cx1;x++)if(fg[y*w+x]){cnt++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+      if(cnt>(cx1-cx0)*(cy1-cy0)*0.01)out.push({comp:-1,cell:[cx0,cy0,cx1,cy1],x0,y0,x1:x1+1,y1:y1+1,seamL:null,seamR:null});}
+    const ordG=orderRows(out),ownerG=new Int16Array(n).fill(-1);ordG.forEach((f,fi)=>{const[cx0,cy0,cx1,cy1]=f.cell;for(let y=cy0;y<cy1;y++)for(let x=cx0;x<cx1;x++)if(fg[y*w+x])ownerG[y*w+x]=fi;});
+    const toFullG=f=>({box:[Math.max(0,f.x0*k-k),Math.max(0,f.y0*k-k),Math.min(W,f.x1*k+k),Math.min(H,f.y1*k+k)],cell:f.cell.map(v=>v*k),split:false,portrait:false,row:f.row,col:f.col});
+    return{engine:ENGINE_VERSION,w:W,h:H,k,bg:{...bg},sw:w,sh:h,paper:pm,owner:ownerG,figures:ordG.map(toFullG),portrait:null,portraitIndex:-1,rd,grid:opt.grid};}
+  const hsF=figs.map(c=>c.h).sort((a,b)=>a-b),medF=hsF.length?hsF[Math.floor(hsF.length/2)]:maxH;
+  for(const c of figs){const bw=c.w,bh=c.h,M=new Uint8Array(bw*bh);for(let y=0;y<bh;y++)for(let x=0;x<bw;x++){const i=(c.y0+y)*w+c.x0+x;if(fg[i]&&lb.lab[i]===c.id)M[y*bw+x]=1;}
+    /* 上下に つながった2人（背の高さが ほかの倍ちかい ときだけ ためす） */
+    let pieces=[{M,bw,bh,ox:0,oy:0,seamL:null,seamR:null}];
+    if(bh>=1.55*medF||bw/bh<0.5){const T=transpose(M,bw,bh),cuts=findCuts(T,bh,bw,0.5);
+      if(cuts.length){const bounds=[null,...cuts,null],minH=bh>=1.55*medF?0.6*medF:0.4*bh,parts=[];
+        for(let j=0;j+1<bounds.length;j++){const A=bounds[j],Bc=bounds[j+1],P=new Uint8Array(bw*bh);let y0=bh,y1=-1;
+          for(let x=0;x<bw;x++){const ya=A?A[x]:0,yb=Bc?Bc[x]:bh;for(let y=ya;y<yb;y++)if(M[y*bw+x]){P[y*bw+x]=1;if(y<y0)y0=y;if(y>y1)y1=y;}}
+          if(y1<0)continue;parts.push({P,y0,y1});}
+        if(parts.length>1&&parts.every(q=>q.y1-q.y0+1>=minH))pieces=parts.map(({P,y0,y1})=>{const nh=y1-y0+1,PM=new Uint8Array(bw*nh);for(let y=0;y<nh;y++)for(let x=0;x<bw;x++)PM[y*bw+x]=P[(y0+y)*bw+x];return{M:PM,bw,bh:nh,ox:0,oy:y0,seamL:null,seamR:null};});}}
+    for(const pc of pieces){const cuts=findCuts(pc.M,pc.bw,pc.bh,0.4);const xsAll=[null,...cuts,null];
+      for(let j=0;j+1<xsAll.length;j++){const L=xsAll[j],R=xsAll[j+1];let x0=1e9,x1=-1,y0=1e9,y1=-1;
+        for(let y=0;y<pc.bh;y++){const xa=L?L[y]:0,xb=R?R[y]:pc.bw;for(let x=xa;x<xb;x++)if(pc.M[y*pc.bw+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}
+        if(x1<0)continue;const gy0=c.y0+pc.oy;
+        out.push({comp:c.id,x0:c.x0+x0,y0:gy0+y0,x1:c.x0+x1+1,y1:gy0+y1+1,band:[gy0,gy0+pc.bh],seamL:L?{y0:gy0,xs:Int32Array.from(L,v=>v+c.x0)}:null,seamR:R?{y0:gy0,xs:Int32Array.from(R,v=>v+c.x0)}:null,split:pieces.length>1||cuts.length>0});}}
+  }
+  /* 大きな1枚絵（高画質の正面立ち絵）が 小さな向き違いの絵と いっしょに 描かれている場合 */
+  let portrait=null;if(out.length>=4){const hs2=out.map(c=>c.y1-c.y0).sort((a,b)=>a-b),mh=hs2[Math.floor(hs2.length/2)];const tall=out.filter(c=>c.y1-c.y0>=1.55*mh&&!c.split);
+    if(tall.length===1&&(tall[0].x1-tall[0].x0)/(tall[0].y1-tall[0].y0)<0.95){portrait=tall[0];out.splice(out.indexOf(portrait),1);}}
+  /* 横に並ぶ段ごとに 左から順（読む順） */
+  const ord=orderRows(out);
+  /* 持ち主マップ（縮小座標）: どの画素が どの人物のものか */
+  const owner=new Int16Array(n).fill(-1);
+  if(portrait)portrait.portrait=true;const all=portrait?[...ord,portrait]:ord;
+  all.forEach((f,fi)=>{const ya=f.band?f.band[0]:f.y0,yb=f.band?f.band[1]:f.y1;for(let y=ya;y<yb;y++){const xa=f.seamL?f.seamL.xs[y-f.seamL.y0]:f.x0,xb=f.seamR?f.seamR.xs[y-f.seamR.y0]:f.x1;
+    for(let x=Math.max(0,xa-rd);x<Math.min(w,xb+rd);x++){const i=y*w+x;if(lb.lab[i]===f.comp&&(!f.seamL||x>=xa)&&(!f.seamR||x<xb))owner[i]=fi;}}});
+  /* つながっていない小さな飾り（リボン・羽）は 重なる人物の枠に入れる */
+  for(const c of comps){if(all.some(f=>f.comp===c.id))continue;const cx=(c.x0+c.x1)/2,cy=(c.y0+c.y1)/2;let best=-1,bd=1e9;
+    all.forEach((f,fi)=>{const mx=(f.x1-f.x0)*0.06,my=(f.y1-f.y0)*0.03;if(cx>=f.x0-mx&&cx<=f.x1+mx&&cy>=f.y0-my&&cy<=f.y1+my){const dd=Math.hypot(cx-(f.x0+f.x1)/2,cy-(f.y0+f.y1)/2);if(dd<bd){bd=dd;best=fi;}}});
+    if(best>=0&&c.area<maxA*0.2){const f=all[best];f.x0=Math.min(f.x0,c.x0);f.y0=Math.min(f.y0,c.y0);f.x1=Math.max(f.x1,c.x1);f.y1=Math.max(f.y1,c.y1);
+      for(let y=c.y0;y<c.y1;y++)for(let x=c.x0;x<c.x1;x++){const i=y*w+x;if(lb.lab[i]===c.id)owner[i]=best;}}}
+  const toFull=f=>({box:[Math.max(0,f.x0*k-k),Math.max(0,f.y0*k-k),Math.min(W,f.x1*k+k),Math.min(H,f.y1*k+k)],split:!!f.split,portrait:!!f.portrait,row:f.row,col:f.col});
+  return{engine:ENGINE_VERSION,w:W,h:H,k,bg:{...bg},sw:w,sh:h,paper:pm,owner,figures:ord.map(toFull),portrait:portrait?toFull(all[all.length-1]):null,portraitIndex:portrait?all.length-1:-1,rd};}
+function forceBg(sm,mode){const b=analyzeBackground(sm);if(mode===b.mode)return b;if(mode==='alpha')return{mode:'alpha'};
+  const{w,h,R,G,B}=sm,ring=[];for(let x=0;x<w;x++){ring.push(x,(h-1)*w+x);}for(let y=0;y<h;y++){ring.push(y*w,y*w+w-1);}
+  const c=[median(ring.map(i=>R[i])),median(ring.map(i=>G[i])),median(ring.map(i=>B[i]))];
+  return{mode:mode==='white'?'light':mode==='black'?'dark':'color',color:c,noise:b.noise||3};}
+function orderRows(figs){const s=figs.slice().sort((a,b)=>(a.y0+a.y1)-(b.y0+b.y1));const rows=[];let cur=[];
+  for(const f of s){const cy=(f.y0+f.y1)/2;if(cur.length){const m=cur.reduce((t,g)=>t+(g.y0+g.y1)/2,0)/cur.length,hh=cur.reduce((t,g)=>t+(g.y1-g.y0),0)/cur.length;if(Math.abs(cy-m)>hh*0.5){rows.push(cur);cur=[];}}cur.push(f);}
+  if(cur.length)rows.push(cur);const out=[];rows.forEach((r,ri)=>{r.sort((a,b)=>(a.x0+a.x1)-(b.x0+b.x1));r.forEach((f,ci)=>{f.row=ri;f.col=ci;out.push(f);});});return out;}
+function transpose(M,w,h){const T=new Uint8Array(w*h);for(let y=0;y<h;y++)for(let x=0;x<w;x++)T[x*h+y]=M[y*w+x];return T;}
+/* 縦の切れ目（動的計画法で 線をよけて通る）。返り値: 切れ目ごとの 行→x の配列（左から順） */
+function seamAt(M,bw,bh,xc,band){const xa=Math.max(0,xc-band),xb=Math.min(bw-1,xc+band),W=xb-xa+1,cost=new Float32Array(bh*W),from=new Int8Array(bh*W);
+  for(let y=0;y<bh;y++)for(let xi=0;xi<W;xi++){const v=M[y*bw+xa+xi];let best=0,bf=0;if(y>0){best=1e18;for(let s=-1;s<=1;s++){const q=xi+s;if(q<0||q>=W)continue;const c=cost[(y-1)*W+q]+(s?0.02:0);if(c<best){best=c;bf=s;}}}
+    cost[y*W+xi]=best+v+Math.abs(xa+xi-xc)*0.001;from[y*W+xi]=bf;}
+  let xi=0,bv=1e18;for(let q=0;q<W;q++)if(cost[(bh-1)*W+q]<bv){bv=cost[(bh-1)*W+q];xi=q;}
+  const xs=new Int32Array(bh);let cross=0;for(let y=bh-1;y>=0;y--){xs[y]=xa+xi;cross+=M[y*bw+xa+xi];xi+=from[y*W+xi];xi=Math.max(0,Math.min(W-1,xi));}
+  return{xs,cross};}
+function findCuts(M,bw,bh,minRatio){const prof=new Float32Array(bw);for(let y=0;y<bh;y++)for(let x=0;x<bw;x++)prof[x]+=M[y*bw+x];
+  const r=Math.max(1,Math.round(bw*0.006)),sp=new Float32Array(bw);for(let x=0;x<bw;x++){let s=0,m=0;for(let j=-r;j<=r;j++){const q=x+j;if(q>=0&&q<bw){s+=prof[q];m++;}}sp[x]=s/m/bh;}
+  const minW=Math.max(4,bh*0.15),cands=[];
+  for(let x=Math.round(minW);x<bw-minW;x++){if(sp[x]>=0.6)continue;let isMin=true;for(let j=-Math.round(minW*0.5);j<=Math.round(minW*0.5);j++){const q=x+j;if(q>=0&&q<bw&&sp[q]<sp[x]){isMin=false;break;}}if(isMin&&(!cands.length||x-cands[cands.length-1]>minW*0.5))cands.push(x);}
+  const band=Math.max(3,Math.round(bh*0.08)),seams=[];
+  for(const xc of cands){const sm=seamAt(M,bw,bh,xc,band);if(sm.cross<=0.2*bh)seams.push({xc,xs:sm.xs,cross:sm.cross});}
+  seams.sort((a,b)=>a.cross-b.cross);const acc=[];
+  const areaBetween=(L,R)=>{let a=0;for(let y=0;y<bh;y++){const xa=L?L.xs[y]:0,xb=R?R.xs[y]:bw;for(let x=xa;x<xb;x++)a+=M[y*bw+x];}return a;};
+  const widthBetween=(L,R)=>{let x0=1e9,x1=-1;for(let y=0;y<bh;y++){const xa=L?L.xs[y]:0,xb=R?R.xs[y]:bw;for(let x=xa;x<xb;x++)if(M[y*bw+x]){if(x<x0)x0=x;if(x>x1)x1=x;}}return x1-x0+1;};
+  for(const s of seams){const all=[...acc,s].sort((a,b)=>a.xc-b.xc),k=all.indexOf(s),L=all[k-1]||null,R=all[k+1]||null;
+    const aL=areaBetween(L,s),aR=areaBetween(s,R);if(Math.min(aL,aR)<minRatio*Math.max(aL,aR))continue;if(widthBetween(L,s)<minW||widthBetween(s,R)<minW)continue;
+    /* 交差: 切れ目どうしが 交わらない */
+    let ok=true;for(const o of acc){let lt=0,gt=0;for(let y=0;y<bh;y++){if(o.xs[y]<s.xs[y])lt++;else if(o.xs[y]>s.xs[y])gt++;}if(lt&&gt){ok=false;break;}}if(ok)acc.push(s);}
+  return acc.sort((a,b)=>a.xc-b.xc).map(s=>s.xs);}
+
+/* ---------------- 1人ぶんを 原寸で 切り抜く ---------------- */
+function extract(img,det,fi,opt){opt=opt||{};const W=img.w,H=img.h,src=img.data,k=det.k,bg=det.bg;
+  const f=fi==='portrait'?det.portrait:det.figures[fi],ownIdx=fi==='portrait'?det.portraitIndex:fi;if(!f)throw new Error('no figure');
+  const[x0,y0,x1,y1]=f.box,m=Math.round(Math.max(x1-x0,y1-y0)*0.04)+4,X0=Math.max(0,x0-m),Y0=Math.max(0,y0-m),X1=Math.min(W,x1+m),Y1=Math.min(H,y1+m),w=X1-X0,h=Y1-Y0,n=w*h;
+  const R=new Float32Array(n),G=new Float32Array(n),B=new Float32Array(n),A=new Float32Array(n);
+  for(let y=0;y<h;y++){let o=((Y0+y)*W+X0)*4;for(let x=0;x<w;x++,o+=4){const i=y*w+x;R[i]=src[o];G[i]=src[o+1];B[i]=src[o+2];A[i]=src[o+3];}}
+  let P=null;if(det.paper){P=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];for(let y=0;y<h;y++)for(let x=0;x<w;x++){const p=samplePaper(det.paper,k,X0+x,Y0+y),i=y*w+x;P[0][i]=p[0];P[1][i]=p[1];P[2][i]=p[2];}}
+  else if(bg.mode==='checker'){P=[new Float32Array(n),new Float32Array(n),new Float32Array(n)];for(let i=0;i<n;i++){const a=bg.c1,c=bg.c2,da=Math.abs(R[i]-a[0])+Math.abs(G[i]-a[1])+Math.abs(B[i]-a[2]),dc=Math.abs(R[i]-c[0])+Math.abs(G[i]-c[1])+Math.abs(B[i]-c[2]),q=da<dc?a:c;P[0][i]=q[0];P[1][i]=q[1];P[2][i]=q[2];}}
+  const dc=darknessAndCand(R,G,B,A,P,w,h,bg,1.0),d=dc.d,cand=dc.cand;
+  /* ほかの人物の画素・自分の枠の外は 背景あつかい */
+  const other=new Uint8Array(n),ow=det.owner,sw=det.sw;
+  for(let y=0;y<h;y++){const sy=Math.min(det.sh-1,((Y0+y)/k)|0);for(let x=0;x<w;x++){const sx=Math.min(sw-1,((X0+x)/k)|0),o=ow[sy*sw+sx];if(o>=0&&o!==ownIdx)other[y*w+x]=1;}}
+  const ib=Math.round(Math.max(x1-x0,y1-y0)*0.012)+2,sc=new Uint8Array(n);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x,X=X0+x,Y=Y0+y,inner=X>=x0-ib&&X<x1+ib&&Y>=y0-ib&&Y<y1+ib;sc[i]=cand[i]||other[i]||!inner?1:0;}
+  /* 背景は 外から流しこむ。ただし 2画素より細い すきま（輪郭線のとぎれ）からは 服の中へ 入らない */
+  const floodSeal=r=>{const so=opening(sc,w,h,r);for(let i=0;i<n;i++)if(other[i])so[i]=1;const b1=borderFlood(so,w,h);/* ひらいた背景に すぐ となる 線の きわ だけ つける */return propagate(b1,sc,w,h,3);};
+  let bgm;if(bg.mode==='alpha'){bgm=borderFlood(sc,w,h);}
+  else if(opt.protectWhite){bgm=floodSeal(5);}
+  else{/* ふつう: 細いすきま(2画素)だけ ふさぐ。ただし 太めのすきま(5画素)の 奥の 広い面（白い服）は 服として残す。
+       腕と体のあいだ・三つ編みのあいだの 小さな紙は 背景のまま */
+    const bA=floodSeal(2),bB=floodSeal(5),diff=new Uint8Array(n);let areaB=0;for(let i=0;i<n;i++){if(!bB[i])areaB++;diff[i]=bA[i]&&!bB[i]?1:0;}
+    const ld=label(diff,w,h),keep=new Uint8Array(ld.n+1);for(let c=1;c<=ld.n;c++)keep[c]=ld.size[c]>=areaB*(opt.clothMin||0.025)?1:0;
+    bgm=bA;for(let i=0;i<n;i++){const c=ld.lab[i];if(c&&keep[c])bgm[i]=0;}}
+  let fg=new Uint8Array(n);for(let i=0;i<n;i++)fg[i]=bgm[i]?0:1;
+  /* いちばん大きい かたまり＋すぐ近くの部品だけ（文字や となりの切れはしは すてる） */
+  {const lb=label(fg,w,h);if(!lb.n)throw new Error('empty figure');let mainC=1;for(let c=2;c<=lb.n;c++)if(lb.size[c]>lb.size[mainC])mainC=c;
+    const mm=new Uint8Array(n);for(let i=0;i<n;i++)mm[i]=lb.lab[i]===mainC?1:0;const near=dilate(mm,w,h,Math.max(4,Math.round(h*0.006)));
+    const mb=lb.box.subarray(mainC*4,mainC*4+4),mH=mb[3]-mb[1]+1;
+    const keep=new Uint8Array(lb.n+1);keep[mainC]=1;for(let i=0;i<n;i++){const c=lb.lab[i];if(c&&c!==mainC&&near[i]&&lb.size[c]>6){const pb=lb.box.subarray(c*4,c*4+4);
+      /* 足の下の 文字（「正面」など）・頭の上の 文字は 入れない */if(pb[1]>=mb[3]-mH*0.01||pb[3]<=mb[1]+mH*0.01)continue;keep[c]=1;}}
+    for(let i=0;i<n;i++)fg[i]=keep[lb.lab[i]]?1:0;}
+  let rgba;
+  if(bg.mode==='alpha'){const nr=dilate(fg,w,h,2),out=new Uint8ClampedArray(n*4);for(let i=0;i<n;i++){let a=nr[i]&&!other[i]?Math.min(1,Math.max(0,(A[i]-8)/238)):0;if(a<0.03)a=0;
+      out[i*4]=R[i];out[i*4+1]=G[i];out[i*4+2]=B[i];out[i*4+3]=Math.round(a*255);}rgba=out;}
+  else rgba=bg.mode==='dark'?alphaDark(R,G,B,d,fg,other,w,h,opt):alphaLight(R,G,B,d,dc.chroma,P,fg,other,w,h,bg,opt);
+  /* 透明でない範囲で切りつめ */
+  let bx0=w,by0=h,bx1=-1,by1=-1;for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(rgba[(y*w+x)*4+3]>5){if(x<bx0)bx0=x;if(x>bx1)bx1=x;if(y<by0)by0=y;if(y>by1)by1=y;}
+  if(bx1<0)throw new Error('empty alpha');const cw=bx1-bx0+1,chh=by1-by0+1,data=new Uint8ClampedArray(cw*chh*4);
+  for(let y=0;y<chh;y++)data.set(rgba.subarray(((by0+y)*w+bx0)*4,((by0+y)*w+bx0+cw)*4),y*cw*4);
+  return{w:cw,h:chh,data,ox:X0+bx0,oy:Y0+by0};}
+
+function alphaLight(R,G,B,d,chroma,P,fg,other,w,h,bg,opt){const n=w*h;
+  const ys=[];for(let y=0;y<h;y++){let any=0;for(let x=0;x<w;x++)if(fg[y*w+x]){any=1;break;}if(any)ys.push(y);}const top=ys[0],bot=ys[ys.length-1],FH=bot-top+1;
+  let area=0;for(let i=0;i<n;i++)area+=fg[i];
+  /* 足もとの影（灰色・うす茶）を 外側から たどって除く。靴の中は 輪郭線で守られる */
+  if(opt.ground!==false){const gb=Math.round(bot-FH*0.06),gd=opt.groundD||70,gc=opt.groundC||20,sh=new Uint8Array(n),inv=new Uint8Array(n);
+    for(let y=gb;y<=bot;y++)for(let x=0;x<w;x++){const i=y*w+x;sh[i]=d[i]<gd&&chroma[i]<gc&&d[i]<120?1:0;}
+    for(let i=0;i<n;i++){inv[i]=fg[i]?0:1;}const msk=new Uint8Array(n);for(let i=0;i<n;i++)msk[i]=inv[i]||sh[i];const gr=propagate(inv,msk,w,h,0);let rem=0;for(let i=0;i<n;i++)if(fg[i]&&gr[i]){fg[i]=0;rem++;}
+    if(rem){const lb=label(fg,w,h);let mc=1;for(let c=2;c<=lb.n;c++)if(lb.size[c]>lb.size[mc])mc=c;const mm=new Uint8Array(n);for(let i=0;i<n;i++)mm[i]=lb.lab[i]===mc?1:0;const near=dilate(mm,w,h,Math.max(4,Math.round(h*0.006)));
+      const keep=new Uint8Array(lb.n+1);keep[mc]=1;for(let i=0;i<n;i++){const c=lb.lab[i];if(c&&c!==mc&&near[i]&&lb.size[c]>6)keep[c]=1;}for(let i=0;i<n;i++)fg[i]=keep[lb.lab[i]]?1:0;}}
+  /* 腕と体のあいだ・足のあいだに 囲まれた 紙の白（くっきりした線で囲まれた平らな紙色だけ） */
+  const rem=new Uint8Array(n),pmin=opt.pocketMin==null?0.0006:opt.pocketMin;
+  if(pmin>0){const lim=11,strict=new Uint8Array(n);for(let i=0;i<n;i++)strict[i]=fg[i]&&d[i]<lim&&chroma[i]<(bg.mode==='light'?15:40)?1:0;
+    const lb=label(strict,w,h),headLine=top+FH*0.26;
+    for(let c=1;c<=lb.n;c++){const pa=lb.size[c];if(pa<Math.max(12,pmin*0.4*area))continue;const bx=lb.box.subarray(c*4,c*4+4);
+      const xa=Math.max(0,bx[0]-3),ya=Math.max(0,bx[1]-3),xb=Math.min(w-1,bx[2]+3),yb=Math.min(h-1,bx[3]+3);
+      let s=0,s2=0,cy=0,rs=0,rn=0;for(let y=ya;y<=yb;y++)for(let x=xa;x<=xb;x++){const i=y*w+x;if(lb.lab[i]===c){s+=d[i];s2+=d[i]*d[i];cy+=y;}
+        else{let adj=0;for(let dy=-2;dy<=2&&!adj;dy++)for(let dx=-2;dx<=2;dx++){const yy=y+dy,xx=x+dx;if(Math.abs(dx)+Math.abs(dy)>2||yy<0||yy>=h||xx<0||xx>=w)continue;if(lb.lab[yy*w+xx]===c){adj=1;break;}}if(adj){rs+=d[i];rn++;}}}
+      const pm=s/pa,pv=s2/pa-pm*pm,rd=rn?rs/rn:0;cy/=pa;let ok;if(pa>area*(opt.pocketMax||0.04)){continue;}
+      if(cy<headLine)ok=pm<2.5&&pv<2&&pa>=pmin*area;else ok=(pm<7.5&&pv<9&&rd>24)||(pm<8&&pv<16&&rd>32)||(pm<4.5&&pv<4&&pa>=pmin*area);
+      if(ok){for(let y=ya;y<=yb;y++)for(let x=xa;x<=xb;x++){const i=y*w+x;if(lb.lab[i]===c)rem[i]=1;}}}
+    let any=0;for(let i=0;i<n;i++)any|=rem[i];
+    if(any){const mk=new Uint8Array(n);for(let i=0;i<n;i++)mk[i]=rem[i]||(fg[i]&&d[i]<lim+4)?1:0;const g=propagate(rem,mk,w,h,0);for(let i=0;i<n;i++)if(g[i]){rem[i]=1;fg[i]=0;}}}
+  /* 三つ編みと腕のあいだの せまい すきまの紙だけ 外から少しだけ 流しこむ（白い服の中までは 入らない） */
+  if(opt.flood!==false){const fd=opt.floodD||8,lim=Math.max(2,Math.round(FH*0.005)),pl=new Uint8Array(n),inv=new Uint8Array(n);for(let i=0;i<n;i++){inv[i]=fg[i]?0:1;pl[i]=inv[i]||(d[i]<fd&&chroma[i]<10)?1:0;}
+    const g=propagate(inv,pl,w,h,lim);for(let i=0;i<n;i++)if(fg[i]&&g[i]){fg[i]=0;rem[i]=1;}}
+  /* JPEGの ごく小さな穴だけ うめる */
+  {const filled=fillHoles(fg,w,h),holes=new Uint8Array(n);for(let i=0;i<n;i++)holes[i]=filled[i]&&!fg[i]?1:0;const lb=label(holes,w,h),nr=dilate(rem,w,h,2);for(let i=0;i<n;i++){const c=lb.lab[i];if(c&&lb.size[c]<40&&!nr[i])fg[i]=1;}}
+  {const op=opening(fg,w,h,1),er=erode(fg,w,h,2);for(let i=0;i<n;i++)fg[i]=(op[i]||er[i])&&!rem[i]?1:0;}
+  /* 輪郭: 線と紙の 中間の画素を 不透明度に（紙の色を 差し引いて 白いふちを出さない） */
+  const er=erode(fg,w,h,2),dl=dilate(fg,w,h,1),rimz=new Uint8Array(n),er4=erode(fg,w,h,opt.rimPx||4);for(let i=0;i<n;i++)rimz[i]=dl[i]&&!er4[i]?1:0;
+  const fd=new Float32Array(n);for(let i=0;i<n;i++)fd[i]=fg[i]?d[i]:0;const dloc0=extFilter(fd,w,h,3,true);
+  const gd=gaussian(d,w,h,0.5);const ia=new Float32Array(n),ink=new Uint8Array(n),inkMin=opt.inkMin||40;
+  for(let i=0;i<n;i++){const dl0=Math.max(dloc0[i],8);let v=Math.min(1,Math.max(0,d[i]/dl0));if(v>0.9)v=1;ia[i]=v;ink[i]=d[i]>=0.6*dl0&&dl0>=inkMin?1:0;}
+  const iab=gaussian(ia,w,h,0.5);
+  const inv=new Uint8Array(n),msk=new Uint8Array(n);for(let i=0;i<n;i++){inv[i]=fg[i]?0:1;msk[i]=inv[i]||(rimz[i]&&!ink[i])?1:0;}
+  const outside=propagate(inv,msk,w,h,0),od=dilate(outside,w,h,1),alpha=new Float32Array(n);
+  for(let i=0;i<n;i++){let a=er[i]?1:0;const zone=(outside[i]&&rimz[i])||(ink[i]&&rimz[i]&&od[i]);
+    if(zone){a=Math.min(fg[i]?1:a,iab[i]);}else if(rimz[i]&&fg[i])a=1;if(other[i])a=0;if(a<0.04)a=0;alpha[i]=a;}
+  const out=new Uint8ClampedArray(n*4);
+  for(let i=0;i<n;i++){const a=alpha[i];let r=R[i],g=G[i],b=B[i];
+    if(a>0&&a<0.999&&P){const aa=Math.max(a,0.04);r=P[0][i]-(P[0][i]-r)/aa;g=P[1][i]-(P[1][i]-g)/aa;b=P[2][i]-(P[2][i]-b)/aa;}
+    out[i*4]=r;out[i*4+1]=g;out[i*4+2]=b;out[i*4+3]=Math.round(a*255);}
+  return out;}
+
+function alphaDark(R,G,B,d,fg,other,w,h,opt){const n=w*h;let sub=[R,G,B];
+  const ys=[];for(let y=0;y<h;y++){for(let x=0;x<w;x++)if(fg[y*w+x]){ys.push(y);break;}}const top=ys[0],bot=ys[ys.length-1],FH=bot-top+1;let area=0;for(let i=0;i<n;i++)area+=fg[i];
+  const fo=(opt.edgePx||6),er2=erode(fg,w,h,2),alpha=new Float32Array(n);for(let i=0;i<n;i++)alpha[i]=er2[i]?1:0;
+  /* 黒地の上の 透けた布（低彩度・明るさで不透明度） */
+  const V=new Float32Array(n),C=new Float32Array(n);for(let i=0;i<n;i++){V[i]=Math.max(R[i],G[i],B[i]);C[i]=V[i]-Math.min(R[i],G[i],B[i]);}
+  if(opt.sheer!==false){const z0=top+FH*0.28,z1=top+FH*0.97,ref=245,cloth=new Uint8Array(n);
+    for(let y=0;y<h;y++){if(y<z0||y>z1)continue;for(let x=0;x<w;x++){const i=y*w+x;cloth[i]=er2[i]&&C[i]<30&&V[i]<ref-4?1:0;}}
+    const lb=label(cloth,w,h);for(let i=0;i<n;i++){const c=lb.lab[i];if(c&&lb.size[c]<=0.0015*area)cloth[i]=0;}
+    const sa=new Float32Array(n);for(let i=0;i<n;i++)sa[i]=cloth[i]?((V[i]<30&&C[i]<18)?0:Math.min(1,Math.max(0.3,V[i]/ref))):1;
+    const sab=gaussian(sa,w,h,2.0);for(let i=0;i<n;i++)if(fg[i])alpha[i]=Math.min(alpha[i]||1,sab[i]);}
+  const vb=gaussian(V,w,h,0.5),lo=24,hi=125,erE=erode(fg,w,h,fo),dl=dilate(fg,w,h,1),rimz=new Uint8Array(n);for(let i=0;i<n;i++)rimz[i]=dl[i]&&!erE[i]?1:0;
+  const ra0=new Float32Array(n);for(let i=0;i<n;i++)ra0[i]=Math.min(1,Math.max(0,(vb[i]-lo)/(hi-lo)));const ra=gaussian(ra0,w,h,0.7);
+  for(let i=0;i<n;i++){if(rimz[i])alpha[i]=ra[i];if(rimz[i]&&C[i]<22&&V[i]<150&&V[i]>=hi)alpha[i]=Math.min(alpha[i],V[i]/175);}
+  /* 囲まれた黒（レースの穴・足のあいだ） */
+  const hole=new Uint8Array(n);for(let i=0;i<n;i++)hole[i]=fg[i]&&V[i]<lo+6&&C[i]<18?1:0;{const lb=label(hole,w,h);for(let i=0;i<n;i++){const c=lb.lab[i];if(c&&lb.size[c]<6)hole[i]=0;}}
+  const gz0=top+FH*0.35;for(let y=Math.max(0,Math.floor(gz0));y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(fg[i]&&V[i]<46&&C[i]<34)hole[i]=1;}
+  {const lb=label(hole,w,h);for(let i=0;i<n;i++){const c=lb.lab[i];if(c&&lb.size[c]<8)hole[i]=0;}}
+  const hr=dilate(hole,w,h,1);for(let i=0;i<n;i++){if(hole[i])alpha[i]=0;else if(hr[i]&&fg[i])alpha[i]=Math.min(alpha[i],ra[i]);}
+  const out=new Uint8ClampedArray(n*4);for(let i=0;i<n;i++){let a=fg[i]||rimz[i]?alpha[i]:0;if(other[i])a=0;let r=R[i],g=G[i],b=B[i];
+    if(a>0.02&&a<0.999){r=Math.min(255,r/Math.max(a,0.02));g=Math.min(255,g/Math.max(a,0.02));b=Math.min(255,b/Math.max(a,0.02));}
+    out[i*4]=r;out[i*4+1]=g;out[i*4+2]=b;out[i*4+3]=Math.round(Math.max(0,Math.min(1,a))*255);}
+  return out;}
+
+/* ---------------- 向きの手がかり ---------------- */
+function features(fig){const{w,h,data}=fig,S=128,s=S/h,tw=Math.max(8,Math.round(w*s)),th=S;
+  /* 面積平均で 高さ128へ */
+  const R=new Float32Array(tw*th),G=new Float32Array(tw*th),B=new Float32Array(tw*th),A=new Float32Array(tw*th),N=new Float32Array(tw*th);
+  for(let y=0;y<h;y++){const ty=Math.min(th-1,(y*s)|0);for(let x=0;x<w;x++){const tx=Math.min(tw-1,(x*s)|0),o=(y*w+x)*4,a=data[o+3]/255,i=ty*tw+tx;R[i]+=data[o]*a;G[i]+=data[o+1]*a;B[i]+=data[o+2]*a;A[i]+=a;N[i]++;}}
+  const M=new Uint8Array(tw*th);for(let i=0;i<tw*th;i++){if(A[i]>0){R[i]/=A[i];G[i]/=A[i];B[i]/=A[i];}A[i]/=Math.max(1,N[i]);M[i]=A[i]>0.5?1:0;}
+  let y0=th,y1=-1;for(let y=0;y<th;y++)for(let x=0;x<tw;x++)if(M[y*tw+x]){if(y<y0)y0=y;if(y>y1)y1=y;}
+  const FH=Math.max(1,y1-y0+1);
+  /* 足もとの中心（下5%の重心） */
+  let fs=0,fx=0;for(let y=Math.max(y0,y1-Math.round(FH*0.05));y<=y1;y++)for(let x=0;x<tw;x++)if(M[y*tw+x]){fs++;fx+=x;}fx=fs?fx/fs:tw/2;
+  /* 頭の帯: 肌色の割合と かたより */
+  const hb0=y0+Math.round(FH*0.08),hb1=y0+Math.round(FH*0.30);let hm=0,sk=0,sx=0,hx0=tw,hx1=-1,eye=0,eyx=0;
+  for(let y=hb0;y<hb1;y++)for(let x=0;x<tw;x++){const i=y*tw+x;if(!M[i])continue;hm++;if(x<hx0)hx0=x;if(x>hx1)hx1=x;const r=R[i],g=G[i],b=B[i];
+    if(r>195&&g>150&&b<g-3&&r-b>16&&r-g<70&&r-g>4){sk++;sx+=x;}}
+  /* 顔の中の 目（肌色にかこまれた こい色） */
+  for(let y=hb0;y<hb1;y++)for(let x=1;x<tw-1;x++){const i=y*tw+x;if(!M[i])continue;const r=R[i],g=G[i],b=B[i],v=Math.max(r,g,b);if(v<170&&v>0){let nb=0;for(let dx=-3;dx<=3;dx++){const j=i+dx;if(j>=0&&j<tw*th){const rr=R[j],gg=G[j],bb=B[j];if(rr>195&&gg>150&&bb<gg-3&&rr-bb>16)nb++;}}if(nb>=2){eye++;eyx+=x;}}}
+  const hw=Math.max(1,hx1-hx0),face=hm?sk/hm:0,off=sk>6?((sx/sk)-(hx0+hx1)/2)/hw:0,eoff=eye>2?((eyx/eye)-(hx0+hx1)/2)/hw:0;
+  /* 正規化した シルエット（足もと中心・高さ48）: 左右反転の似かたに使う */
+  const GW=40,GH=48,g=new Float32Array(GW*GH),sc=GH/FH;for(let y=y0;y<=y1;y++)for(let x=0;x<tw;x++){if(!M[y*tw+x])continue;const gx=Math.round((x-fx)*sc+GW/2),gy=Math.min(GH-1,Math.round((y-y0)*sc));if(gx>=0&&gx<GW)g[gy*GW+gx]=1;}
+  let inter=0,uni=0;for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const a=g[y*GW+x],b=g[y*GW+GW-1-x];inter+=Math.min(a,b);uni+=Math.max(a,b);}
+  /* 色の平均（頭の帯）: 背面は髪の色、正面は肌色 */
+  let hr=0,hg=0,hbb=0;for(let y=hb0;y<hb1;y++)for(let x=0;x<tw;x++){const i=y*tw+x;if(M[i]){hr+=R[i];hg+=G[i];hbb+=B[i];}}
+  /* 体の重心のかたより（横向きは 前に 出る） */
+  let bs=0,bx=0;for(let y=y0;y<=y1;y++)for(let x=0;x<tw;x++)if(M[y*tw+x]){bs++;bx+=x;}const boff=bs?((bx/bs)-fx)/FH:0;
+  return{face,off,eye:hm?eye/hm:0,eoff,sym:uni?inter/uni:0,sil:g,gw:GW,gh:GH,boff,aspect:w/h,headCol:hm?[hr/hm,hg/hm,hbb/hm]:[0,0,0],h:fig.h,w:fig.w};}
+function mirrorIoU(fa,fb){const a=fa.sil,b=fb.sil,GW=fa.gw,GH=fa.gh;let i=0,u=0;for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const p=a[y*GW+x],q=b[y*GW+GW-1-x];i+=Math.min(p,q);u+=Math.max(p,q);}return u?i/u:0;}
+function plainIoU(fa,fb){const a=fa.sil,b=fb.sil;let i=0,u=0;for(let k=0;k<a.length;k++){i+=Math.min(a[k],b[k]);u+=Math.max(a[k],b[k]);}return u?i/u:0;}
+
+/* ---------------- 8方向への わりあて ----------------
+   ゲームの方向: 0正面 1右斜め前 2右横(鼻が画面右) 3右斜め後ろ 4背面 5左斜め後ろ 6左横 7左斜め前 */
+const OPP=[0,7,6,5,4,3,2,1];
+/* 原画コーパス（specs/atlas の人手確認済み 110 シート・726 人物）で求めた 向きごとの特徴の平均と ばらつき
+   [目の見え方, 肌の見え方, 左右対称さ]（どれも そのシートの中で 0〜1 に正規化） */
+const TURN_STAT=[[[0.884,0.95,0.874],[0.167,0.067,0.13]],[[0.761,0.9,0.391],[0.194,0.106,0.227]],[[0.533,0.755,0.139],[0.246,0.158,0.172]],[[0.255,0.471,0.321],[0.264,0.296,0.25]],[[0.145,0.254,0.891],[0.25,0.295,0.183]]];
+function normFeats(F){const mx=k=>Math.max(1e-6,...F.map(f=>f[k])),eyeM=Math.max(0.012,mx('eye')),faceM=Math.max(0.05,mx('face'));
+  const syms=F.map(f=>f.sym),sMin=Math.min(...syms),sMax=Math.max(...syms),rel=F.length>=5&&sMax-sMin>0.2;
+  return F.map(f=>({eyeN:Math.min(1,f.eye/eyeM),faceN:Math.min(1,f.face/faceM),symN:rel?(f.sym-sMin)/(sMax-sMin):Math.min(1,Math.max(0,(f.sym-0.3)/0.52)),
+    pr:1/(1+Math.exp(-(10*f.off+6*f.eoff-34*f.boff)))}));}
+function orientationScores(F,o){o=o||{};const N=normFeats(F),ws=o.wSide==null?1.2:o.wSide,wt=o.wTurn==null?1:o.wTurn;
+  return N.map(q=>[0,1,2,3,4,5,6,7].map(d=>{const t=Math.min(d,8-d),st=TURN_STAT[t],x=[q.eyeN,q.faceN,q.symN];let c=0;
+    for(let k=0;k<3;k++){const z=(x[k]-st[0][k])/Math.max(0.12,st[1][k]);c+=0.5*z*z*wt;}
+    if(t>=1&&t<=3){const p=Math.min(0.985,Math.max(0.015,q.pr));c+=ws*(d<=3?-Math.log(p):-Math.log(1-p));}
+    return c;}));}
+/* 8方向への わりあて（分枝限定法）。方向は 空きにもできる（あとで 反対向きの反転で うめる）
+   パラメータは 原画コーパス 110 シートで 調整（tools/v09/README と qa/v09 を参照） */
+const ASSIGN_DEFAULT={empty:[15,4.8,2.2,1.8,10.8],wSide:1.47,wPair:5.73,prior:1.2,unused:0.8,wTurn:0.48};
+/* よくある並び: 読む順に 正面→右斜め前→右横→右斜め後→背面→左斜め後→左横→左斜め前（時計回り）/ その逆回り */
+const LAYOUTS=[[0,1,2,3,4,5,6,7,-1,-1,-1,-1],[0,7,6,5,4,3,2,1,-1,-1,-1,-1]];
+function assign(F,opt){opt=Object.assign({},ASSIGN_DEFAULT,opt||{});const N=F.length,U=orientationScores(F,opt),MI=[];for(let i=0;i<N;i++){MI.push([]);for(let j=0;j<N;j++)MI[i].push(i===j?1:mirrorIoU(F[i],F[j]));}
+  const E=opt.empty,Ed=[0,1,2,3,4,5,6,7].map(d=>E[Math.min(d,8-d)]),wp=opt.wPair,unused=opt.unused;
+  const layouts=opt.layout?[opt.layout]:N>=5&&N<=9?LAYOUTS:[null];let bestAll=null,bestAllC=1e18,bestLayout=-1;
+  layouts.forEach((lay,li)=>{
+  const C=U.map((row,i)=>row.map((v,d)=>v-(lay&&lay[i]===d?opt.prior:0)));
+  const lb=new Float64Array(9);for(let d=7;d>=0;d--){let m=Ed[d]+unused;for(let i=0;i<N;i++)m=Math.min(m,C[i][d]);lb[d]=lb[d+1]+m;}
+  const order=[0,1,2,3,4,5,6,7].map(d=>[...Array(N).keys()].sort((a,b)=>C[a][d]-C[b][d]));
+  const map=new Int8Array(8).fill(-1),used=new Uint8Array(N);let best=null,bestC=1e18,nodes=0;const pairOf={5:3,6:2,7:1};
+  (function rec(d,acc){if(++nodes>3e6)return;if(acc+lb[d]>=bestC)return;if(d===8){bestC=acc;best=Array.from(map);return;}
+    const pd=pairOf[d];
+    for(const i of order[d]){if(used[i])continue;let c=C[i][d];if(pd!=null&&map[pd]>=0)c+=(1-MI[i][map[pd]])*wp;used[i]=1;map[d]=i;rec(d+1,acc+c);used[i]=0;map[d]=-1;}
+    rec(d+1,acc+Ed[d]+unused);})(0,0);
+  if(bestC<bestAllC){bestAllC=bestC;bestAll=best;bestLayout=li;}});
+  const fr=finish(bestAll,F,MI);fr.layout=bestLayout;fr.cost=bestAllC;return fr;}
+/* 空いた方向を うめる: 反対の向き（左右対称）を 反転 → なければ 近い向き */
+function finish(map,F,MI){const frames=[];for(let d=0;d<8;d++){const i=map[d];frames.push(i>=0?{fig:i,mirror:false,how:'auto'}:null);}
+  for(let d=0;d<8;d++){if(frames[d])continue;const o=OPP[d];if(o!==d&&frames[o]&&frames[o].how!=='near'){frames[d]={fig:frames[o].fig,mirror:!frames[o].mirror,how:'mirror'};}}
+  const near=[[1,7,2,6],[2,0,3],[1,3,0],[4,2,5],[3,5,2,6],[4,6,3],[7,5,0],[0,6,1]];
+  for(let d=0;d<8;d++){if(frames[d])continue;for(const q of near[d]){if(frames[q]){/* 左右が ちがう向きなら 反転して使う */const flip=(q>=1&&q<=3)!==(d>=1&&d<=3)&&q!==0&&q!==4&&d!==0&&d!==4;frames[d]={fig:frames[q].fig,mirror:flip?!frames[q].mirror:frames[q].mirror,how:'near'};break;}}
+    if(!frames[d])frames[d]={fig:0,mirror:false,how:'near'};}
+  return frames;}
+/* ---------------- 8方向アトラスの 置き方（縮尺）を 決める ---------------- */
+function plan(figs,frames,opt){/* figs: 切り抜いた人物 [{w,h}]。等倍を基本に、ゲームの身長(1倍で373)に そろえる倍率 ratio を決める */
+  const used=[...new Set(frames.map(f=>f.fig))],hs=used.map(i=>figs[i].h).sort((a,b)=>a-b),medH=hs[Math.floor(hs.length/2)]||373;
+  let ratio=Math.min(2,Math.max(1,medH/373));ratio=Math.round(ratio*100)/100;
+  let scale=373*ratio/medH;const cw=391*ratio,ch=415*ratio,footY=407.5*ratio;
+  for(const i of used){const f=figs[i];scale=Math.min(scale,(cw-8)/f.w,(footY-6)/f.h);}
+  return{ratio,scale,cellW:cw,cellH:ch,footX:196*ratio,footY,medH};}
+function footCenter(fig){/* 下5%の 不透明度で重みづけした 横の中心 */const{w,h,data}=fig;let bot=-1;for(let y=h-1;y>=0&&bot<0;y--)for(let x=0;x<w;x++)if(data[(y*w+x)*4+3]>100){bot=y;break;}
+  let top=0;for(let y=0;y<h;y++){let a=0;for(let x=0;x<w;x++)if(data[(y*w+x)*4+3]>100){a=1;break;}if(a){top=y;break;}}
+  const b0=Math.max(top,bot-Math.round((bot-top)*0.05));let s=0,sx=0;for(let y=b0;y<=bot;y++)for(let x=0;x<w;x++){const a=data[(y*w+x)*4+3];s+=a;sx+=a*x;}
+  return{fx:s?sx/s:w/2,bot:bot<0?h-1:bot,top};}
+function flipFig(fig){const{w,h,data}=fig,o=new Uint8ClampedArray(data.length);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const a=(y*w+x)*4,b=(y*w+w-1-x)*4;o[a]=data[b];o[a+1]=data[b+1];o[a+2]=data[b+2];o[a+3]=data[b+3];}return{...fig,data:o};}
+/* 主要な色（弾の色に使う） */
+function mainColor(fig){const{w,h,data}=fig,hist=new Map();for(let i=0;i<w*h;i+=3){const o=i*4;if(data[o+3]<200)continue;const r=data[o],g=data[o+1],b=data[o+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);if(mx-mn<40||mx<70)continue;
+  if(r>195&&g>150&&b<g&&r-g<70)continue;const k=(r>>5)<<6|(g>>5)<<3|(b>>5);const e=hist.get(k)||[0,0,0,0];e[0]+=r;e[1]+=g;e[2]+=b;e[3]++;hist.set(k,e);}
+  let best=null;for(const e of hist.values())if(!best||e[3]>best[3])best=e;if(!best)return null;return[best[0]/best[3],best[1]/best[3],best[2]/best[3]].map(Math.round);}
+/* ---------------- 色の手がかり（何枚かの絵を 衣装ごとに 分けるため） ----------------
+   肌色を のぞいた 不透明な画素の 色相18＋明るさ4 のヒストグラム（合計1）。同じ衣装の 別の向き同士は 0.94 以上が ふつう。 */
+function colorSig(fig){const{w,h,data}=fig,B=22,hst=new Float64Array(B);let n=0;const st=Math.max(1,Math.floor(w*h/120000));
+  for(let i=0;i<w*h;i+=st){const o=i*4;if(data[o+3]<200)continue;const r=data[o],g=data[o+1],b=data[o+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b),v=mx/255,s=mx?(mx-mn)/mx:0;
+    if(r>195&&g>150&&b<g-3&&r-b>16&&r-g<70&&r-g>4)continue;
+    let k;if(s<0.16||v<0.18)k=18+Math.min(3,Math.floor(v*4));else{const d=mx-mn;let hh=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;hh=(hh*60+360)%360;k=Math.floor(hh/20)%18;}
+    hst[k]++;n++;}
+  for(let k=0;k<B;k++)hst[k]/=Math.max(1,n);return Array.from(hst);}
+function sigSim(a,b){let s=0;for(let k=0;k<a.length;k++)s+=Math.min(a[k],b[k]);return s;}
+/* 正面らしさ（1枚だけの絵が 立ち絵か どうか） */
+function looksFront(f,others){/* 同じ衣装の ほかの向きと くらべて いちばん 正面らしいか */
+  if(!others||others.length<2)return f.sym>=0.66&&f.face>=0.1&&f.eye>=0.006;
+  const U=orientationScores([...others,f]),row=U[U.length-1],mn=Math.min(...row);return row[0]-mn<0.35;}
+/* 何枚かの絵を 衣装ごとに まとめる。files: [{figs:[{sig,feat,h}], portrait:bool}]（選んだ順）
+   返り値: [{members:[{file, role:'sheet'|'portrait'}], reason}]。まちがいは 確認画面で なおす前提。 */
+function groupFiles(files,opt){opt=opt||{};const T_ATTACH=opt.attach||0.9,T_PART=opt.part||0.95,T_SINGLE=opt.single||0.86,ADJ=0.04;
+  const kind=f=>f.figs.length>=6?'sheet':f.figs.length>=2?'partial':f.figs.length===1?'single':'none';
+  const groups=[];const figsOf=g=>g.members.flatMap(m=>files[m.file].figs);
+  const near=(g,i)=>g.members.some(m=>Math.abs(m.file-i)===1)?ADJ:0;
+  const simFig=(s,g)=>{let m=0;for(const f of figsOf(g))m=Math.max(m,sigSim(s,f.sig));return m;};
+  const simFile=(i,g)=>{const F=files[i].figs;let t=0;for(const f of F)t+=simFig(f.sig,g);return F.length?t/F.length:0;};
+  files.forEach((f,i)=>{if(kind(f)==='sheet')groups.push({members:[{file:i,role:'sheet'}],reason:'sheet',hasPortrait:!!f.portrait});});
+  files.forEach((f,i)=>{if(kind(f)!=='partial')return;let best=null,bs=0;for(const g of groups){const s=simFile(i,g)+near(g,i);if(s>bs&&figsOf(g).length+f.figs.length<=12){bs=s;best=g;}}
+    if(best&&bs>=T_PART)best.members.push({file:i,role:'sheet'});else groups.push({members:[{file:i,role:'sheet'}],reason:'partial',hasPortrait:!!f.portrait});});
+  /* 1枚だけの絵が その衣装の 正面に 近いか（背面より 正面に 色が にているか） */
+  const frontOf=(g,fig)=>{const F=figsOf(g);if(F.length<3)return looksFront(fig.feat,F.map(x=>x.feat));const fr=assign(F.map(x=>x.feat));
+    const f0=F[fr[0].fig],f4=F[fr[4].fig];return sigSim(fig.sig,f0.sig)>=sigSim(fig.sig,f4.sig)-0.005;};
+  const loose=[];
+  files.forEach((f,i)=>{if(kind(f)!=='single')return;const fig=f.figs[0];let best=null,bs=0;for(const g of groups){const s=simFig(fig.sig,g)+near(g,i);if(s>bs){bs=s;best=g;}}
+    if(best&&bs>=T_ATTACH){const hs=figsOf(best).map(x=>x.h).sort((a,b)=>a-b),mh=hs[hs.length>>1]||0;
+      const asPortrait=!best.hasPortrait&&fig.h>=mh*1.15&&frontOf(best,fig);best.members.push({file:i,role:asPortrait?'portrait':'sheet'});if(asPortrait)best.hasPortrait=true;}
+    else loose.push(i);});
+  const sg=[];for(const i of loose){const fig=files[i].figs[0];let best=null,bs=0;for(const g of sg){const s=simFig(fig.sig,g)+near(g,i);if(s>bs){bs=s;best=g;}}
+    if(best&&bs>=T_SINGLE)best.members.push({file:i,role:'sheet'});else sg.push({members:[{file:i,role:'sheet'}],reason:'singles'});}
+  const all=groups.concat(sg);all.forEach(g=>g.members.sort((a,b)=>a.file-b.file));all.sort((a,b)=>a.members[0].file-b.members[0].file);
+  files.forEach((f,i)=>{if(kind(f)==='none')all.push({members:[{file:i,role:'sheet'}],reason:'none'});});
+  return all.map(g=>({members:g.members,reason:g.reason}));}
+return{ENGINE_VERSION,colorSig,sigSim,looksFront,groupFiles,detect,extract,features,assign,orientationScores,mirrorIoU,plainIoU,plan,footCenter,flipFig,mainColor,OPP,_internal:{gaussian,boxMean,extFilter,distL1,dilate,erode,label,propagate,fillHoles,analyzeBackground,shrink}};
+}
+/* ============ v0.9 衣装とりこみ（自作衣装） ============
+   8方向の絵（2×4・3×3・1×8・4×2 など 任意の並び、黒地・白地・色地・透明・市松模様）を ゲームの中で
+   自動で 切り抜き、新しい衣装として くわえる。
+   - 原画の画素は 描き直さない（背景だけ 透明にする）。ほぼ等倍で 置き、拡大・縮小は 最小限。
+   - 欠けた向きは 左右対称の向きを 左右反転して うめる。
+   - 高画質の 正面立ち絵が あれば、タイトル・衣装えらび・マニュアルの 衣装の絵に つかう。
+   - 保存は この端末の IndexedDB（原画も いっしょに 保存。あとで 切り抜きを なおせる）。
+   既存の 衣装・ID・条件・能力・セーブ（localStorage）は 変更しない。 */
+const MY_DIR_NAME=['正面','右斜め前','右横','右斜め後ろ','背面','左斜め後ろ','左横','左斜め前'];
+const MY_OPP=[0,7,6,5,4,3,2,1];
+const MY_MAX_PIX=12e6;          /* iPhone の canvas 上限（約1677万画素）より 小さく */
+const MY_TITLE_MAX=3000;        /* タイトル用の絵の 長い辺の上限（原寸を優先） */
+const MY_ENG=CostumeCutEngine();
+
+/* ---- 切り抜き処理（Worker でも メインスレッドでも 同じ） ---- */
+function MyCutJobs(E){
+  const pack=f=>({w:f.w,h:f.h,ox:f.ox,oy:f.oy,data:f.data});
+  const tick=()=>new Promise(r=>setTimeout(r,0));
+  return async function run(m,progress){
+    if(m.cmd==='sheet'||m.cmd==='single'){
+      const img={w:m.w,h:m.h,data:new Uint8ClampedArray(m.buf)},opt=m.opt||{};
+      progress({stage:'detect',done:0,total:1});await tick();
+      const det=E.detect(img,opt);
+      let list=det.figures.map((f,i)=>i);
+      if(m.cmd==='single'){/* 立ち絵: いちばん大きい人物 1人 */
+        const cand=det.figures.map((f,i)=>({i,a:(f.box[2]-f.box[0])*(f.box[3]-f.box[1])}));if(det.portrait)cand.push({i:'portrait',a:(det.portrait.box[2]-det.portrait.box[0])*(det.portrait.box[3]-det.portrait.box[1])});
+        cand.sort((a,b)=>b.a-a.a);if(!cand.length)throw new Error('人物が 見つかりませんでした');list=[cand[0].i];}
+      const figs=[];
+      for(let j=0;j<list.length;j++){progress({stage:'cut',done:j,total:list.length});await tick();
+        try{const f=E.extract(img,det,list[j],opt);figs.push({...pack(f),feat:E.features(f),foot:E.footCenter(f),sig:E.colorSig(f),box:(list[j]==='portrait'?det.portrait:det.figures[list[j]]).box});}catch(e){figs.push(null);}}
+      let portrait=null;
+      if(m.cmd==='sheet'&&det.portrait){progress({stage:'cut',done:list.length,total:list.length+1});await tick();
+        try{const f=E.extract(img,det,'portrait',opt);portrait={...pack(f),feat:E.features(f),foot:E.footCenter(f),sig:E.colorSig(f),box:det.portrait.box};}catch(e){}}
+      return{bg:det.bg.mode,grid:det.grid||null,figs,portrait,size:[m.w,m.h]};}
+    if(m.cmd==='assign')return E.assign(m.feats,m.opt||{});
+    throw new Error('unknown job');};}
+const MyCut={worker:null,broken:false,seq:0,jobs:new Map(),local:null,
+  makeWorker(){if(this.worker||this.broken)return this.worker;
+    try{const src='const CostumeCutEngine='+CostumeCutEngine.toString()+';\nconst MyCutJobs='+MyCutJobs.toString()+';\nconst __run=MyCutJobs(CostumeCutEngine());\n'+
+      'function __tr(o,a){if(!o||typeof o!=="object")return;if(o instanceof Uint8ClampedArray){a.push(o.buffer);return;}if(ArrayBuffer.isView(o))return;for(const k in o)__tr(o[k],a);}\n'+
+      'self.onmessage=async e=>{const m=e.data;try{const r=await __run(m,p=>self.postMessage({job:m.job,type:"progress",p}));const t=[];__tr(r,t);self.postMessage({job:m.job,type:"done",r},t);}catch(err){self.postMessage({job:m.job,type:"error",msg:String(err&&err.message||err)});}};';
+      const url=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));const w=new Worker(url);
+      w.onmessage=e=>{const d=e.data,j=this.jobs.get(d.job);if(!j)return;if(d.type==='progress'){j.onp&&j.onp(d.p);return;}this.jobs.delete(d.job);if(d.type==='done')j.res(d.r);else j.rej(new Error(d.msg));};
+      w.onerror=e=>{e.preventDefault&&e.preventDefault();this.broken=true;try{w.terminate();}catch(_){}this.worker=null;const js=[...this.jobs.values()];this.jobs.clear();js.forEach(j=>this.runLocal(j.msg,j.onp).then(j.res,j.rej));};
+      this.worker=w;}catch(e){this.broken=true;this.worker=null;}
+    return this.worker;},
+  runLocal(m,onp){if(!this.local)this.local=MyCutJobs(MY_ENG);return this.local(m,p=>{onp&&onp(p);});},
+  run(m,onp){const w=this.makeWorker();if(!w)return this.runLocal(m,onp);
+    return new Promise((res,rej)=>{const job=++this.seq;this.jobs.set(job,{res,rej,onp,msg:m});
+      try{const copy=m.buf?{...m,buf:m.buf.slice(0),job}:{...m,job};w.postMessage(copy,copy.buf?[copy.buf]:[]);}catch(e){this.jobs.delete(job);this.runLocal(m,onp).then(res,rej);}});}};
+
+/* ---- 保存（IndexedDB。つかえない端末では その場かぎり） ---- */
+const MyStore={dbp:null,mem:new Map(),ok:true,
+  db(){if(this.dbp)return this.dbp;this.dbp=new Promise((res,rej)=>{try{if(!window.indexedDB)throw new Error('no indexedDB');const r=indexedDB.open('yakko-my-costumes',1);
+      r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('costumes'))r.result.createObjectStore('costumes',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||new Error('idb'));r.onblocked=()=>rej(new Error('blocked'));}catch(e){rej(e);}});
+    this.dbp.catch(()=>{this.dbp=null;this.ok=false;});return this.dbp;},
+  async tx(mode,fn){const d=await this.db();return new Promise((res,rej)=>{let out;try{const t=d.transaction('costumes',mode),r=fn(t.objectStore('costumes'));if(r)r.onsuccess=()=>{out=r.result;};
+      t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error||new Error('tx'));t.onabort=()=>rej(t.error||new Error('abort'));}catch(e){rej(e);}});},
+  async all(){try{const r=await this.tx('readonly',s=>s.getAll());return(r||[]).concat([...this.mem.values()]);}catch(e){this.ok=false;return[...this.mem.values()];}},
+  async get(id){if(this.mem.has(id))return this.mem.get(id);try{return await this.tx('readonly',s=>s.get(id));}catch(e){return null;}},
+  async put(rec){try{await this.tx('readwrite',s=>s.put(rec));this.mem.delete(rec.id);try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}return true;}catch(e){this.mem.set(rec.id,rec);return false;}},
+  async del(id){this.mem.delete(id);try{await this.tx('readwrite',s=>s.delete(id));}catch(e){}}};
+
+/* ---- 登録（ゲームの 衣装表に 足す。既存の表は 書きかえない） ---- */
+const myUrls=new Map();
+function myCostumeFiles(rec){return{file:`${rec.id}_r${rec.rev}.png`,title:`title_${rec.id}_r${rec.rev}.png`};}
+function registerMyCostume(rec){if(!rec||!rec.id||!rec.sheet||!rec.title)return null;unregisterMyCostume(rec.id,true);
+  const fs=myCostumeFiles(rec),toUrl=b=>URL.createObjectURL(b instanceof Blob?b:new Blob([b.buf],{type:b.type||'image/png'}));
+  const u1=toUrl(rec.sheet),u2=toUrl(rec.title);myUrls.set(rec.id,[u1,u2,fs.file,fs.title]);ASSETS[fs.file]=u1;ASSETS[fs.title]=u2;
+  ATLAS.yasuko.costumes[rec.id]={file:fs.file,cw:391,ch:415,cols:4,n:8,foot:[196,408],mine:true};
+  if(rec.ratio>1)HIRES_YASUKO[fs.file]=rec.ratio;
+  if(Array.isArray(rec.viewBox)&&rec.viewBox.length===4)Y_VIEW_BOX[fs.file]=rec.viewBox;
+  TITLE_FRONT[rec.id]=fs.title;WARD_FRONT_TITLE_IDS.add(rec.id);
+  const c={id:rec.id,grp:'mine',mine:true,unlock:0,star:1,name:String(rec.name||'とりこんだ衣装').slice(0,24),
+    ab:'とりこんだ衣装（この端末に 保存）。基本衣装と 同じ 能力。',shot:'rose',col:rec.col||'#9b2c46',trail:rec.trail||'#f6c1cc',mods:{}};
+  CMAP[rec.id]=c;MY_ORDER.set(rec.id,rec.order||rec.created||Date.now());const i=MY_COSTUMES.findIndex(x=>x.id===rec.id);if(i>=0)MY_COSTUMES[i]=c;else MY_COSTUMES.push(c);
+  MY_COSTUMES.sort((a,b)=>(MY_ORDER.get(a.id)||0)-(MY_ORDER.get(b.id)||0));
+  spriteCache.clear();bboxCache.clear();iconCache.clear();return c;}
+const MY_ORDER=new Map();
+function unregisterMyCostume(id,keepOrder){const u=myUrls.get(id);if(u){u.slice(0,2).forEach(x=>{try{URL.revokeObjectURL(x);}catch(e){}});
+    [u[2],u[3]].forEach(f=>{delete ASSETS[f];delete images[f];delete HIRES_YASUKO[f];delete Y_VIEW_BOX[f];});myUrls.delete(id);}
+  delete ATLAS.yasuko.costumes[id];delete TITLE_FRONT[id];WARD_FRONT_TITLE_IDS.delete(id);delete CMAP[id];
+  const i=MY_COSTUMES.findIndex(x=>x.id===id);if(i>=0)MY_COSTUMES.splice(i,1);if(!keepOrder)MY_ORDER.delete(id);}
+async function myCostumesInit(){/* 起動時: セーブを 読む前に 登録（えらんでいた自作衣装を 着たまま はじめられる） */
+  try{const recs=await Promise.race([MyStore.all(),new Promise(r=>setTimeout(()=>r(null),6000))]);
+    if(!recs)return;recs.filter(r=>!(r&&CMAP[r.id]&&CMAP[r.id].builtin)).sort((a,b)=>(a.order||a.created||0)-(b.order||b.created||0)).forEach(r=>{try{registerMyCostume(r);}catch(e){console.warn(e);}});}catch(e){console.warn('my costumes',e);}}
+
+/* ---- 画面（DOM は ここで つくる。HTML本体と アセット部分は 変えない） ---- */
+const myStyle=document.createElement('style');myStyle.id='v09-my-costume';myStyle.textContent=`
+#scrMyCos{z-index:6;padding:calc(6px + env(safe-area-inset-top)) 8px calc(6px + env(safe-area-inset-bottom))}
+#scrMyCos>.card{width:min(100%,560px);padding:8px 10px 12px;margin:0 auto;flex:none}
+#scrMyCos .wardHead h2{font-size:22px!important}
+#scrMyCos p{font-size:16px;line-height:1.5;margin:4px 0}
+.mcNote{font-size:14px!important;color:#7a5a40}
+.mcSec{margin:10px 0 3px;font-weight:bold;color:var(--wine);font-size:16px;text-align:left}
+.mcSec small{font-weight:normal;color:#8a6a4a;font-size:13px}
+#mcSrc{display:flex;gap:6px;overflow-x:auto;padding:2px}
+#mcSrc canvas{height:110px;width:auto;border:1px solid #e0c98e;border-radius:6px;background:#fff;flex:none}
+#mcInfo{font-size:14px;color:#6a4a30;margin:4px 0;line-height:1.4}
+#mcCompass{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:4px auto;max-width:min(100%,calc((100dvh - 30px)*0.86))}
+#mcCompass .mcCell{position:relative;border:2px solid #e3c47a;border-radius:10px;background:#fffdf6;padding:2px 2px 0;min-height:0;display:flex;flex-direction:column;align-items:center;font-family:var(--ui);color:var(--ink)}
+#mcCompass .mcCell canvas{width:100%;height:auto;aspect-ratio:391/415;display:block}
+#mcCompass .mcCell .lb{font-size:12px;font-weight:bold;line-height:1.2;padding:1px 0 3px;color:var(--wine)}
+#mcCompass .mcCell .bd{position:absolute;top:3px;right:3px;font-size:11px;background:#fff1c9;border:1px solid #d9b35a;border-radius:6px;padding:0 4px;color:#7a4a20}
+#mcCompass .mcCell.on{border-color:var(--wine);box-shadow:0 0 0 3px #fff,0 0 0 5px var(--wine)}
+#mcCompass .mcCenter{border:2px dashed #e3c47a;border-radius:10px;background:radial-gradient(#fff,#f4e8cf);display:flex;flex-direction:column;align-items:center;justify-content:center}
+#mcCompass .mcCenter canvas{width:100%;height:auto;aspect-ratio:391/415}
+#mcCompass .mcCenter .lb{font-size:11px;color:#8a6a4a}
+#mcTools{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:4px 0}
+#mcTools .btn,#mcTitleBtns .btn,.mcRow .btn{width:auto;min-height:42px;font-size:15px;padding:4px 12px;margin:4px 0 0;letter-spacing:0}
+#mcFigs{display:flex;gap:5px;overflow-x:auto;padding:3px 2px 6px;touch-action:pan-x}
+#mcFigs button{flex:0 0 78px;border:2px solid #e3c47a;border-radius:8px;background:#fffdf6;padding:2px;font-size:11px;color:var(--ink);font-family:var(--ui)}
+#mcFigs button canvas{width:100%;height:84px;object-fit:contain;display:block}
+#mcFigs button.used{border-color:#b9d6a0;background:#f6fbef}
+#mcTitleRow{display:flex;gap:8px;align-items:center}
+#mcTitleCv{height:150px;width:auto;border:1px solid #e0c98e;border-radius:8px;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0 0/16px 16px;flex:none}
+#mcTitleBtns{display:flex;flex-direction:column;align-items:flex-start;text-align:left;font-size:13px;color:#6a4a30;gap:2px}
+.mcName{display:flex;align-items:center;gap:8px;margin:10px 0 2px;font-weight:bold;color:var(--wine);font-size:16px}
+#mcName{flex:1;min-width:0;font-size:18px;padding:8px 10px;border:2px solid #e3c47a;border-radius:10px;background:#fff;color:var(--ink);font-family:var(--ui);-webkit-user-select:text;user-select:text}
+#mcAdv{margin:10px 0 0;text-align:left;font-size:15px;border:1px solid #ead29a;border-radius:10px;padding:4px 8px;background:#fffaf0}
+#mcAdv summary{font-weight:bold;color:var(--wine);cursor:pointer;padding:4px 0}
+#mcAdv label{display:flex;align-items:center;gap:6px;margin:6px 0;flex-wrap:wrap}
+#mcAdv select{font-size:16px;padding:4px;border-radius:8px;border:1px solid #d9b35a;background:#fff;color:var(--ink)}
+#mcAdv input[type=checkbox]{width:22px;height:22px}
+#mcBusy{position:fixed;inset:0;z-index:40;background:rgba(40,25,20,.45);display:flex;align-items:center;justify-content:center}
+#mcBusy .box{background:var(--paper);border:3px double var(--gold);border-radius:16px;padding:16px 18px;width:min(86%,360px);text-align:center;color:var(--wine);font-weight:bold;font-size:17px}
+#mcBar{height:12px;border-radius:6px;background:#efe0c0;margin-top:10px;overflow:hidden}#mcBar>div{height:100%;width:0;background:linear-gradient(90deg,#e7a0b2,#8e2f45);transition:width .2s}
+#mcAsk{position:fixed;inset:0;z-index:41;background:rgba(40,25,20,.45);display:flex;align-items:center;justify-content:center}
+#mcAsk .box{background:var(--paper);border:3px double var(--gold);border-radius:16px;padding:14px 16px;width:min(88%,380px);text-align:center}
+#mcAsk .msg{font-size:18px;font-weight:bold;color:var(--wine);line-height:1.5}
+.myWardBtns{display:flex;gap:6px;justify-content:center;margin:2px 0}
+.myWardBtns .btn{width:auto;min-height:36px!important;font-size:14px!important;padding:2px 12px!important;margin:2px 0 0!important;letter-spacing:0}
+#btnWardImport{margin-left:auto!important;font-size:15px!important;padding:5px 10px!important}
+@media (max-width:370px){#scrWard .wardHead h2{font-size:18px!important}#btnWardImport{font-size:14px!important;padding:4px 7px!important}}
+`;document.head.appendChild(myStyle);
+const myScreen=document.createElement('div');myScreen.id='scrMyCos';myScreen.className='screen dim hidden';myScreen.innerHTML=`<div class="card">
+ <div class="wardHead"><h2>衣装を とりこむ</h2><button class="btn sub small" id="mcBack">もどる</button></div>
+ <div id="mcIntro">
+  <p>8方向の絵を えらぶと、自動で 人物を さがして 切りぬき、新しい衣装に します。<br>2×4・3×3・1列 など、どんな並びでも だいじょうぶ。</p>
+  <button class="btn" id="mcPick">📂 8方向の絵を えらぶ</button>
+  <button class="btn sub" id="mcImplOpen">🛠 とりこんだ衣装を 実装する（次の版を つくる）</button>
+  <p class="mcNote">向きが 足りないときは 反対の向きを 左右反転して つかいます。<br>正面の 大きな立ち絵が あれば、あとで くわえられます（タイトル・衣装えらび・マニュアルに つかいます）。<br>絵は 描きなおさず、背景だけを 透明にします。</p>
+ </div>
+ <div id="mcWork" class="hidden">
+  <div id="mcSrc"></div>
+  <div id="mcInfo"></div>
+  <div class="mcSec">8つの向き <small>（向きを タップ → 下の絵を タップで いれかえ）</small></div>
+  <div id="mcCompass"></div>
+  <div id="mcTools"></div>
+  <div class="mcSec">見つけた絵</div>
+  <div id="mcFigs"></div>
+  <div class="mcSec">タイトル・衣装えらび・マニュアルの絵</div>
+  <div id="mcTitleRow"><canvas id="mcTitleCv" width="10" height="10"></canvas><div id="mcTitleBtns"></div></div>
+  <label class="mcName">名前 <input id="mcName" maxlength="20" autocomplete="off" enterkeyhint="done"></label>
+  <details id="mcAdv"><summary>こまかい せってい（うまく切れないとき）</summary>
+   <label>背景 <select id="mcBg"><option value="auto">自動</option><option value="white">白・明るい色</option><option value="black">黒・暗い色</option><option value="color">そのほかの色</option><option value="alpha">透明（PNG）</option></select></label>
+   <label>並び方 <select id="mcGridR"><option value="0">自動</option>${[1,2,3,4,5].map(n=>`<option value="${n}">${n}段</option>`).join('')}</select> × <select id="mcGridC"><option value="0">自動</option>${[1,2,3,4,5,6,8,9].map(n=>`<option value="${n}">${n}列</option>`).join('')}</select></label>
+   <label><input type="checkbox" id="mcProtect"> 白い服が すけてしまうときは チェック</label>
+   <label><input type="checkbox" id="mcGround" checked> 足もとの影を けす</label>
+   <label><input type="checkbox" id="mcSheer" checked> 黒い背景のとき うすい布を すけさせる</label>
+   <div class="mcRow"><button class="btn sub" id="mcRedo">この せっていで しらべなおす</button> <button class="btn sub" id="mcAuto">向きを 自動で ならべなおす</button> <button class="btn sub" id="mcMore">ほかの絵も くわえる</button></div>
+  </details>
+  <button class="btn" id="mcSave">この衣装を くわえる</button>
+ </div>
+</div>`;
+document.getElementById('game').appendChild(myScreen);SCREENS.push('scrMyCos');
+const myFile=document.createElement('input');myFile.id='mcFile';myFile.type='file';myFile.accept='image/*';myFile.multiple=true;myFile.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';document.body.appendChild(myFile);
+const myFileP=document.createElement('input');myFileP.id='mcFileP';myFileP.type='file';myFileP.accept='image/*';myFileP.style.cssText='position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';document.body.appendChild(myFileP);
+(function(){const head=document.querySelector('#scrWard .wardHead'),back=$('btnWardBackTop');if(head&&back){const b=document.createElement('button');b.className='btn sub small';b.id='btnWardImport';b.textContent='＋とりこむ';
+  b.setAttribute('aria-label','8方向の絵から 新しい衣装を とりこむ');head.insertBefore(b,back);b.onclick=()=>openMyImport({from:wardFrom});}})();
+
+/* ---- とりこみ中の 状態 ---- */
+let MI=null;
+function myNewSession(from){return{from,sources:[],figs:[],frames:null,sel:-1,portrait:-1,titleFrom:'auto',name:'',opts:{bgMode:'auto',grid:null,protectWhite:false,ground:true,sheer:true},editId:null,rev:1,created:0,order:0,anim:0,animDir:0};}
+function myBusy(on,msg,frac){let b=$('mcBusy');if(!on){if(b)b.remove();return;}
+  if(!b){b=document.createElement('div');b.id='mcBusy';b.innerHTML='<div class="box"><div id="mcBusyMsg"></div><div id="mcBar"><div></div></div></div>';document.body.appendChild(b);}
+  $('mcBusyMsg').innerHTML=msg;$('mcBar').firstChild.style.width=Math.round((frac||0)*100)+'%';}
+function myAsk(msg,yes,no){return new Promise(res=>{const d=document.createElement('div');d.id='mcAsk';d.innerHTML=`<div class="box"><div class="msg">${msg}</div><button class="btn warn" id="mcAskYes">${yes}</button><button class="btn sub" id="mcAskNo">${no}</button></div>`;
+  document.body.appendChild(d);$('mcAskYes').onclick=()=>{d.remove();res(true);};$('mcAskNo').onclick=()=>{d.remove();res(false);};});}
+function openMyImport(o){o=o||{};MB=null;MI=myNewSession(o.from||'title');$('mcBatch')&&$('mcBatch').classList.add('hidden');$('mcBatchNav')&&$('mcBatchNav').classList.add('hidden');$('mcSave').textContent='この衣装を くわえる';showOnly('scrMyCos');$('scrMyCos').scrollTop=0;
+  $('mcIntro').classList.remove('hidden');$('mcWork').classList.add('hidden');$('mcName').value='';
+  if(o.edit)myLoadForEdit(o.edit);}
+function myBackToWard(selectId){const from=MI&&MI.from||'title';myStopAnim();MI=null;openWard(from);if(selectId&&ORDERED_COSTUMES().some(c=>c.id===selectId))selectWard(selectId);}
+$('mcBack').onclick=()=>myBackToWard(null);
+$('mcPick').onclick=()=>{myFile.value='';myFile.click();};
+$('mcImplOpen').onclick=()=>openMyImplement();
+$('mcMore').onclick=()=>{myFile.value='';myFile.click();};
+myFile.onchange=async()=>{const fl=[...(myFile.files||[])];if(!fl.length||!MI)return;
+  if(fl.length>1&&!MI.editId&&!MI.sources.length){await myBatchStart(fl);return;}/* v0.10: 何枚でも → 衣装ごとに 自動で まとめる */
+  for(const f of fl)MI.sources.push({name:f.name||'image',type:f.type||'image/*',blob:f,bytes:null,role:'sheet',img:null,res:null});
+  await myProcessAll(false);};
+myFileP.onchange=async()=>{const f=(myFileP.files||[])[0];if(!f||!MI)return;
+  MI.sources=MI.sources.filter(s=>s.role!=='portrait');MI.sources.push({name:f.name||'portrait',type:f.type||'image/*',blob:f,bytes:null,role:'portrait',img:null,res:null});
+  MI.titleFrom='portrait';await myProcessAll(true);};
+async function myDecode(blob){const url=URL.createObjectURL(blob);try{const im=new Image();im.decoding='async';im.src=url;
+    await new Promise((r,j)=>{if(im.complete&&im.naturalWidth){r();return;}im.onload=()=>r();im.onerror=()=>j(new Error('この絵は 開けませんでした'));});
+    const w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)throw new Error('size');const s=Math.min(1,Math.sqrt(MY_MAX_PIX/(w*h)),8192/Math.max(w,h));
+    const cw=Math.max(1,Math.round(w*s)),ch=Math.max(1,Math.round(h*s)),c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d',{willReadFrequently:true});
+    x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(im,0,0,cw,ch);const d=x.getImageData(0,0,cw,ch);c.width=1;c.height=1;
+    return{w:cw,h:ch,buf:d.data.buffer,scale:s,ow:w,oh:h};}finally{URL.revokeObjectURL(url);}}
+function myEngineOpt(){const o=MI.opts;return{bgMode:o.bgMode,grid:o.grid,protectWhite:!!o.protectWhite,ground:o.ground!==false,sheer:o.sheer!==false};}
+/* すべての絵を しらべる（keepFrames: 向きの わりあてを できるだけ のこす） */
+async function myProcessAll(keepFrames,restore){const S=MI.sources,n=S.length;if(!n)return;
+  try{for(let k=0;k<n;k++){const s=S[k],lab=n>1?`（${k+1}/${n}まい目）`:'';
+      const needRun=!s.res||s.optKey!==JSON.stringify(myEngineOpt());
+      if(!s.bytes&&!s.blob){myBusy(true,'絵を よみこんでいます'+lab,0);s.bytes=await myBlobBuf(s.blob);}
+      if(!s.img&&needRun){myBusy(true,'絵を よみこんでいます'+lab,0.02);s.img=await myDecode(s.blob||new Blob([s.bytes],{type:s.type}));s.scale=s.img.scale;s.ow=s.img.ow;s.oh=s.img.oh;}
+      if(needRun){
+        const r=await MyCut.run({cmd:s.role==='portrait'?'single':'sheet',w:s.img.w,h:s.img.h,buf:s.img.buf,opt:myEngineOpt()},p=>{
+          const f=p.stage==='detect'?0.05:0.1+0.9*(p.done/Math.max(1,p.total));myBusy(true,(p.stage==='detect'?'人物を さがしています':`背景を けしています ${p.done+1}/${p.total}`)+lab,(k+f)/n);});
+        s.res=r;s.optKey=JSON.stringify(myEngineOpt());}}
+    myBusy(true,'向きを しらべています',0.98);
+    const oldFrames=MI.frames;myCollectFigs();
+    const sheetFigs=MI.figs.map((f,i)=>i).filter(i=>!MI.figs[i].isPortrait);
+    if(!sheetFigs.length&&MI.portrait<0){myBusy(false);toast('人物が 見つかりませんでした。<br>「こまかい せってい」で 背景や 並び方を えらんでみてね',6);if(!MI.frames){$('mcIntro').classList.remove('hidden');}return;}
+    if(restore&&restore.length===8&&(MI.restoreCount==null||MI.restoreCount===MI.figs.length)&&restore.every(f=>f&&MI.figs[f.fig]))MI.frames=restore.map(f=>({...f}));
+    else if(keepFrames&&oldFrames&&oldFrames.every(f=>MI.figs[f.fig]))MI.frames=oldFrames;
+    else await myAutoAssign();
+    myBusy(false);myShowWork();}
+  catch(e){console.error(e);myBusy(false);toast('絵を しらべられませんでした<br><small>'+String(e&&e.message||e).slice(0,80)+'</small>',6);}}
+function myCollectFigs(){const figs=[];let portrait=-1;
+  MI.sources.forEach((s,si)=>{if(!s.res)return;(s.res.figs||[]).forEach((f,i)=>{if(!f)return;figs.push({...f,src:si,idx:i,isPortrait:s.role==='portrait'});if(s.role==='portrait'&&portrait<0)portrait=figs.length-1;});
+    if(s.res.portrait&&s.role!=='portrait'){figs.push({...s.res.portrait,src:si,idx:'p',isPortrait:true,inSheet:true});if(portrait<0)portrait=figs.length-1;}});
+  MI.figs=figs;MI.portrait=portrait;
+  figs.forEach(f=>{f.canvas=null;f.mcanvas=null;});}
+async function myAutoAssign(){const idx=MI.figs.map((f,i)=>i).filter(i=>!MI.figs[i].isPortrait);let frames;
+  if(idx.length){const fr=await MyCut.run({cmd:'assign',feats:idx.map(i=>MI.figs[i].feat)});frames=Array.from({length:8},(_,d)=>({...fr[d],fig:idx[fr[d].fig]}));}
+  else frames=Array.from({length:8},(_,d)=>({fig:MI.portrait,mirror:d>=5,how:'near'}));
+  /* 8方向図に 正面が なく、正面の立ち絵が あるときは それを 正面に */
+  if(MI.portrait>=0&&frames[0].how==='near')frames[0]={fig:MI.portrait,mirror:false,how:'portrait'};
+  MI.frames=frames;}
+function myFigCanvas(f,mirror){const k=mirror?'mcanvas':'canvas';if(f[k])return f[k];
+  if(!f.canvas){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(f.data),f.w,f.h),0,0);f.canvas=c;}
+  if(mirror){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;const x=c.getContext('2d');x.translate(f.w,0);x.scale(-1,1);x.drawImage(f.canvas,0,0);f.mcanvas=c;}
+  return f[k];}
+/* 置き方: 絵ごとに 同じ倍率（原画の 大小関係を そのまま）。ゲームの身長に そろえ、等倍に いちばん近い 解像度で 保存 */
+function myPlan(){const used=[...new Set(MI.frames.map(f=>f.fig))],bySrc=new Map();
+  used.forEach(i=>{const f=MI.figs[i],k=f.src+(f.isPortrait?'p':'');if(!bySrc.has(k))bySrc.set(k,[]);bySrc.get(k).push(f.foot.bot-f.foot.top+1);});
+  const med=a=>a.slice().sort((x,y)=>x-y)[a.length>>1];const mainKey=[...bySrc.keys()].sort((a,b)=>bySrc.get(b).length-bySrc.get(a).length)[0];
+  const medMain=med(bySrc.get(mainKey));let ratio=Math.min(2,Math.max(1,medMain/373));ratio=Math.round(ratio*100)/100;
+  const cellW=391*ratio,cellH=415*ratio,footX=196*ratio,footY=407.5*ratio,scales={};
+  for(const[k,hs]of bySrc)scales[k]=373*ratio/med(hs);
+  /* はみ出さないよう 必要なら 少しだけ 小さく（同じ絵の中は 同じ倍率のまま） */
+  used.forEach(i=>{const f=MI.figs[i],k=f.src+(f.isPortrait?'p':'');scales[k]=Math.min(scales[k],(cellW-8)/f.w,(footY-4)/(f.foot.bot+1));});
+  return{ratio,cellW,cellH,footX,footY,scales};}
+function myDrawCell(x,d,plan,cx,cy){const fr=MI.frames[d],f=MI.figs[fr.fig];if(!f)return;let s=plan.scales[f.src+(f.isPortrait?'p':'')],cw=Math.round(plan.cellW),ch=Math.round(plan.cellH);
+  const fx=fr.mirror?(f.w-1-f.foot.fx):f.foot.fx;let dx=Math.round(plan.footX-fx*s),dy=Math.round(plan.footY-f.foot.bot*s);const ww=f.w*s;
+  if(dx<2)dx=2;if(dx+ww>cw-3)dx=Math.floor(cw-3-ww);
+  x.save();x.beginPath();x.rect(cx,cy,cw,ch);x.clip();x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';const src=myFigCanvas(f,fr.mirror);
+  if(Math.abs(s-1)<1e-9)x.drawImage(src,cx+dx,cy+dy);
+  else{let im=src,iw=f.w,ih=f.h;while(iw*s<iw*0.5&&iw>8){const t=document.createElement('canvas');t.width=Math.max(1,Math.round(iw/2));t.height=Math.max(1,Math.round(ih/2));const tx=t.getContext('2d');tx.imageSmoothingQuality='high';tx.drawImage(im,0,0,t.width,t.height);im=t;s*=iw/t.width;iw=t.width;ih=t.height;}
+    x.drawImage(im,cx+dx,cy+dy,iw*s,ih*s);}
+  x.restore();}
+function myCellCanvas(d,plan){const c=document.createElement('canvas');c.width=Math.round(plan.cellW);c.height=Math.round(plan.cellH);myDrawCell(c.getContext('2d'),d,plan,0,0);return c;}
+function myComposeAtlas(plan){const c=document.createElement('canvas');c.width=Math.round(1564*plan.ratio);c.height=Math.round(830*plan.ratio);const x=c.getContext('2d');
+  for(let d=0;d<8;d++)myDrawCell(x,d,plan,Math.round((d%4)*391*plan.ratio),Math.round(((d/4)|0)*415*plan.ratio));return c;}
+function myViewBox(atlas,plan){const W=atlas.width,H=atlas.height,a=atlas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;let x0=1e9,y0=1e9,x1=-1,y1=-1;
+  for(let d=0;d<8;d++){const cx=Math.round((d%4)*391*plan.ratio),cy=Math.round(((d/4)|0)*415*plan.ratio),cw=Math.round(plan.cellW),ch=Math.round(plan.cellH);
+    for(let y=0;y<ch;y+=1)for(let x=0;x<cw;x+=1){if(a[((cy+y)*W+cx+x)*4+3]>16){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}}
+  if(x1<0)return[0,0,391,415];const r=plan.ratio,bx=Math.max(0,Math.floor(x0/r)-3),by=Math.max(0,Math.floor(y0/r)-3);return[bx,by,Math.min(391,Math.ceil(x1/r)+4)-bx,Math.min(415,Math.ceil(y1/r)+4)-by];}
+/* タイトル・衣装えらび・マニュアル用: 原寸のまま（描きなおし・拡大なし）。長すぎる絵だけ 縮める */
+function myUsePortrait(){return MI.portrait>=0&&MI.titleFrom!=='sheet';}
+function myTitleCanvas(){const useP=myUsePortrait(),fr=MI.frames[0],f=useP?MI.figs[MI.portrait]:MI.figs[fr.fig],mir=useP?false:fr.mirror;
+  const src=myFigCanvas(f,mir),k=Math.min(1,MY_TITLE_MAX/Math.max(f.w,f.h)),w=Math.max(1,Math.round(f.w*k)),h=Math.max(1,Math.round(f.h*k)),pad=14,c=document.createElement('canvas');
+  c.width=w+pad*2;c.height=h+pad*2;const x=c.getContext('2d');x.imageSmoothingQuality='high';if(k===1)x.drawImage(src,pad,pad);else x.drawImage(src,pad,pad,w,h);return c;}
+/* ---- 確認画面 ---- */
+function myShowWork(){$('mcIntro').classList.add('hidden');$('mcWork').classList.remove('hidden');
+  if(!$('mcName').value)$('mcName').value=MI.name||myDefaultName();
+  $('mcBg').value=MI.opts.bgMode;$('mcGridR').value=String(MI.opts.grid?MI.opts.grid.rows:0);$('mcGridC').value=String(MI.opts.grid?MI.opts.grid.cols:0);
+  $('mcProtect').checked=!!MI.opts.protectWhite;$('mcGround').checked=MI.opts.ground!==false;$('mcSheer').checked=MI.opts.sheer!==false;
+  myRenderSources();myRenderAll();myStartAnim();myBatchNav();}
+function myDefaultName(){let n=MY_COSTUMES.length+1,nm;do{nm='とりこみ衣装 '+n;n++;}while(MY_COSTUMES.some(c=>c.name===nm));return nm;}
+const MY_BG_NAME={light:'白・明るい色',dark:'黒・暗い色',color:'色つき',alpha:'透明',checker:'市松模様（にせの透明）'};
+function myRenderSources(){const box=$('mcSrc');box.innerHTML='';
+  MI.sources.forEach((s,si)=>{if(!s.img&&s.thumb){const c=document.createElement('canvas');c.width=s.thumb.width;c.height=s.thumb.height;const x=c.getContext('2d');x.drawImage(s.thumb,0,0);myDrawBoxes(x,si,s.res&&s.res.size?c.width/s.res.size[0]:1);box.appendChild(c);return;}
+    if(!s.img)return;const c=document.createElement('canvas'),k=Math.min(1,320/Math.max(s.img.w,s.img.h));c.width=Math.max(1,Math.round(s.img.w*k));c.height=Math.max(1,Math.round(s.img.h*k));
+    const x=c.getContext('2d');/* 縮小表示（putImageData は縮められないので いったん 原寸 → 縮小） */
+    const t=document.createElement('canvas');t.width=s.img.w;t.height=s.img.h;t.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(s.img.buf),s.img.w,s.img.h),0,0);
+    x.imageSmoothingQuality='high';x.drawImage(t,0,0,c.width,c.height);t.width=1;
+    x.lineWidth=2;x.font='bold 14px sans-serif';
+    MI.figs.forEach((f,fi)=>{if(f.src!==si||!f.box)return;const[b0,b1,b2,b3]=f.box.map(v=>v*k);x.strokeStyle=f.isPortrait?'#2a7de1':'#c0392b';x.strokeRect(b0,b1,b2-b0,b3-b1);
+      x.fillStyle='rgba(255,255,255,.85)';x.fillRect(b0,b1,18,17);x.fillStyle=f.isPortrait?'#2a7de1':'#c0392b';x.fillText(String(fi+1),b0+3,b1+14);});
+    box.appendChild(c);});
+  const S=MI.sources.filter(s=>s.res),nf=MI.figs.filter(f=>!f.isPortrait).length;
+  $('mcInfo').innerHTML=`見つけた人物：<b>${nf}人</b>${MI.portrait>=0?'＋正面の立ち絵':''}　背景：${[...new Set(S.map(s=>MY_BG_NAME[s.res.bg]||s.res.bg))].join('・')}`+
+    (S.some(s=>(s.img?s.img.scale:s.scale||1)<1)?'<br><small>大きな絵なので、この端末で あつかえる大きさ（約1200万画素）に して しらべました</small>':'');}
+function myRenderAll(){if(!MI||!MI.frames)return;const plan=myPlan(),comp=$('mcCompass');comp.innerHTML='';
+  /* 上から見た 向き: 上=背面、下=正面、右=右横、左=左横 */
+  const layout=[5,4,3,6,-1,2,7,0,1];
+  layout.forEach(d=>{if(d<0){const c=document.createElement('div');c.className='mcCenter';c.innerHTML='<canvas id="mcAnim" width="10" height="10"></canvas><div class="lb">くるっと 回して 確認</div>';comp.appendChild(c);return;}
+    const fr=MI.frames[d],b=document.createElement('button');b.className='mcCell'+(MI.sel===d?' on':'');b.dataset.d=d;
+    const cv=myCellCanvas(d,plan),sc=document.createElement('canvas');sc.width=Math.round(391*0.6);sc.height=Math.round(415*0.6);const sx=sc.getContext('2d');sx.imageSmoothingQuality='high';sx.drawImage(cv,0,0,sc.width,sc.height);
+    b.appendChild(sc);const lb=document.createElement('div');lb.className='lb';lb.textContent=MY_DIR_NAME[d];b.appendChild(lb);
+    const badge=fr.how==='mirror'?'反転':fr.how==='near'?'代用':fr.how==='portrait'?'立ち絵':fr.mirror?'反転':'';if(badge){const s=document.createElement('span');s.className='bd';s.textContent=badge;b.appendChild(s);}
+    b.onclick=()=>{MI.sel=MI.sel===d?-1:d;myRenderAll();};comp.appendChild(b);});
+  myAnimFrames=Array.from({length:8},(_,d)=>myCellCanvas(d,plan));
+  /* 選んだ向きの 道具 */
+  const tl=$('mcTools');tl.innerHTML='';
+  if(MI.sel>=0){const d=MI.sel,o=MY_OPP[d];tl.innerHTML=`<div style="width:100%;font-size:14px;color:#6a4a30">「${MY_DIR_NAME[d]}」に つかう絵を 下から えらべます</div>`;
+    const add=(t,f,dis)=>{const b=document.createElement('button');b.className='btn sub';b.textContent=t;b.disabled=!!dis;b.onclick=f;tl.appendChild(b);};
+    add('↔ 左右はんてん',()=>{MI.frames[d]={...MI.frames[d],mirror:!MI.frames[d].mirror,how:'user'};myRenderAll();});
+    add(`${MY_DIR_NAME[o]}を はんてんして つかう`,()=>{MI.frames[d]={fig:MI.frames[o].fig,mirror:!MI.frames[o].mirror,how:'mirror'};myRenderAll();},o===d);}
+  /* 見つけた絵 */
+  const fg=$('mcFigs');fg.innerHTML='';const used=new Set(MI.frames.map(f=>f.fig));
+  MI.figs.forEach((f,i)=>{const b=document.createElement('button');b.className=used.has(i)?'used':'';const c=document.createElement('canvas'),k=Math.min(1,200/f.h);c.width=Math.max(1,Math.round(f.w*k));c.height=Math.max(1,Math.round(f.h*k));
+    const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(myFigCanvas(f,false),0,0,c.width,c.height);b.appendChild(c);
+    const t=document.createElement('div');t.textContent=(f.isPortrait?'立ち絵 ':'')+(i+1);b.appendChild(t);
+    b.onclick=()=>{if(MI.sel<0){toast('先に 上の 向きを タップしてね',2.5);return;}MI.frames[MI.sel]={fig:i,mirror:false,how:'user'};myRenderAll();};fg.appendChild(b);});
+  /* タイトル用 */
+  const tc=myTitleCanvas(),tv=$('mcTitleCv'),k=Math.min(1,300/tc.height);tv.width=Math.max(1,Math.round(tc.width*k));tv.height=Math.max(1,Math.round(tc.height*k));const tx=tv.getContext('2d');tx.imageSmoothingQuality='high';tx.drawImage(tc,0,0,tv.width,tv.height);
+  const usingP=myUsePortrait(),pf=usingP?MI.figs[MI.portrait]:MI.figs[MI.frames[0].fig];
+  $('mcTitleBtns').innerHTML=`<div>${usingP?'正面の立ち絵':'8方向図の正面'}（原寸 ${pf.w}×${pf.h}）</div>`;
+  const tb=(t,f)=>{const b=document.createElement('button');b.className='btn sub';b.textContent=t;b.onclick=f;$('mcTitleBtns').appendChild(b);};
+  tb(MI.portrait>=0?'正面の立ち絵を えらびなおす':'高画質の 正面立ち絵を えらぶ',()=>{myFileP.value='';myFileP.click();});
+  if(MI.portrait>=0)tb(usingP?'8方向図の正面を つかう':'正面の立ち絵を つかう',()=>{MI.titleFrom=usingP?'sheet':'portrait';myRenderAll();});}
+let myAnimFrames=[],myAnimT=0;
+function myStartAnim(){myStopAnim();let d=0,last=0;const step=t=>{if(!MI||$('scrMyCos').classList.contains('hidden'))return;myAnimT=requestAnimationFrame(step);if(t-last<420)return;last=t;
+    const cv=$('mcAnim'),f=myAnimFrames[d];if(cv&&f){if(cv.width!==Math.round(391*0.7)){cv.width=Math.round(391*0.7);cv.height=Math.round(415*0.7);}const x=cv.getContext('2d');x.clearRect(0,0,cv.width,cv.height);x.imageSmoothingQuality='high';x.drawImage(f,0,0,cv.width,cv.height);}
+    d=(d+1)%8;};myAnimT=requestAnimationFrame(step);}
+function myStopAnim(){if(myAnimT)cancelAnimationFrame(myAnimT);myAnimT=0;}
+$('mcRedo').onclick=async()=>{if(!MI)return;MI.opts.bgMode=$('mcBg').value;const r=+$('mcGridR').value,c=+$('mcGridC').value;MI.opts.grid=r>0&&c>0?{rows:r,cols:c}:null;
+  MI.opts.protectWhite=$('mcProtect').checked;MI.opts.ground=$('mcGround').checked;MI.opts.sheer=$('mcSheer').checked;MI.sel=-1;await myProcessAll(false);};
+$('mcAuto').onclick=async()=>{if(!MI||!MI.figs.length)return;MI.sel=-1;await myAutoAssign();myRenderAll();};
+$('mcName').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur();});
+/* ---- 保存 ---- */
+function myBlobBuf(b){if(b.arrayBuffer)return b.arrayBuffer();return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsArrayBuffer(b);});}
+function myHex(c){return'#'+c.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');}
+function myCanvasBuf(c){return new Promise((res,rej)=>{try{c.toBlob(b=>{if(!b){rej(new Error('PNGに できませんでした'));return;}myBlobBuf(b).then(res,rej);},'image/png');}catch(e){rej(e);}});}
+const myV09SaveUnused=async()=>{if(!MI||!MI.frames)return;const name=($('mcName').value||'').trim().slice(0,20)||myDefaultName();
+  try{myBusy(true,'衣装を つくっています',0.3);await new Promise(r=>setTimeout(r,30));
+    const plan=myPlan(),atlas=myComposeAtlas(plan),vb=myViewBox(atlas,plan),title=myTitleCanvas();
+    const front=MI.figs[MI.frames[0].fig],mc=MY_ENG.mainColor(front)||[155,44,70];
+    const col=myHex(mc.map(v=>v*0.72)),trail=myHex(mc.map(v=>v+(255-v)*0.7));
+    myBusy(true,'保存しています',0.6);const sheet=await myCanvasBuf(atlas),tbuf=await myCanvasBuf(title);atlas.width=1;
+    const now=Date.now(),id=MI.editId||('my_'+now.toString(36)+Math.floor(Math.random()*1296).toString(36));
+    const rec={id,rev:MI.editId?MI.rev:1,ver:1,engine:MY_ENG.ENGINE_VERSION,name,created:MI.created||now,updated:now,order:MI.order||now,ratio:plan.ratio,viewBox:vb,col,trail,
+      sheet:{type:'image/png',buf:sheet},title:{type:'image/png',buf:tbuf},titleFrom:myUsePortrait()?'portrait':'sheet',figCount:MI.figs.length,
+      frames:MI.frames.map(f=>({fig:f.fig,mirror:!!f.mirror,how:f.how})),opts:MI.opts,
+      sources:MI.sources.filter(s=>s.bytes).map(s=>({name:s.name,type:s.type,role:s.role,buf:s.bytes,w:s.img?s.img.ow:0,h:s.img?s.img.oh:0}))};
+    const stored=await MyStore.put(rec);registerMyCostume(rec);myBusy(false);
+    toast(`新しい衣装『${name.replace(/</g,'&lt;')}』を くわえました！`+(stored?'':'<br><small>この端末では 保存できないため、とじると きえます</small>'),stored?3.5:7);
+    myBackToWard(id);}
+  catch(e){console.error(e);myBusy(false);toast('衣装を 保存できませんでした<br><small>'+String(e&&e.message||e).slice(0,80)+'</small>',6);}};
+/* ---- なおす（保存した原画から もう一度） ---- */
+async function myLoadForEdit(id){const rec=await MyStore.get(id);if(!rec||!rec.sources||!rec.sources.length){toast('もとの絵が 見つかりませんでした',4);return;}
+  MI.editId=id;MI.rev=(rec.rev||1)+1;MI.created=rec.created;MI.order=rec.order;MI.name=rec.name;$('mcName').value=rec.name;MI.opts={...MI.opts,...(rec.opts||{})};MI.titleFrom=rec.titleFrom||'sheet';
+  MI.sources=rec.sources.map(s=>({name:s.name,type:s.type,role:s.role||'sheet',bytes:s.buf,blob:new Blob([s.buf],{type:s.type||'image/png'}),img:null,res:null}));
+  MI.restoreCount=rec.figCount;await myProcessAll(false,rec.frames);}
+/* ---- 衣装えらびの画面に「なおす」「けす」 ---- */
+function myWardExtras(id){const c=CMAP[id];if(!c||!c.mine)return;if(c.builtin){const sm=$('wardInfo').querySelector('.wardSummary'),d=document.createElement('div');d.className='myWardBtns';d.innerHTML=`<span class="wardPtsInline">No.${viewerArtNumber(c.id)} 実装ずみ</span>`;if(sm)sm.after(d);else $('wardInfo').prepend(d);return;}const sum=$('wardInfo').querySelector('.wardSummary');
+  const box=document.createElement('div');box.className='myWardBtns';box.innerHTML='<button class="btn sub small" id="myWardEdit">なおす・名前</button><button class="btn warn small" id="myWardDel">けす</button>';
+  if(sum)sum.after(box);else $('wardInfo').prepend(box);
+  $('myWardEdit').onclick=()=>openMyImport({from:wardFrom,edit:id});
+  $('myWardDel').onclick=async()=>{const ok=await myAsk(`『${c.name.replace(/</g,'&lt;')}』を けしますか？<br><small>とりこんだ絵も けします</small>`,'けす','やめる');if(!ok)return;
+    await MyStore.del(id);unregisterMyCostume(id);if(save.costume===id){save.costume='basic';writeSave();}
+    if(Array.isArray(save.owned)&&save.owned.includes(id)){save.owned=save.owned.filter(x=>x!==id);writeSave();}
+    toast('衣装を けしました',2.5);openWard(wardFrom);};}
+/* SHA-256（途中状態を 保存・再開できる版）。
+   v0.9.1 の「実装」: 公開ファイル index.html の 先頭 T バイト（変わらない part001〜）の 途中状態を ゲームに 持たせ、
+   iPhone の中で 新しい後半だけから 全体の SHA-256（parts/index.html.sha256）を 計算する。 */
+function Sha256Mid(){
+'use strict';
+const K=new Uint32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+ 0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+ 0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+ 0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+const W=new Int32Array(64);
+function blocks(H,b,off,end){let h0=H[0]|0,h1=H[1]|0,h2=H[2]|0,h3=H[3]|0,h4=H[4]|0,h5=H[5]|0,h6=H[6]|0,h7=H[7]|0;
+  for(let p=off;p<end;p+=64){
+    for(let i=0;i<16;i++){const q=p+i*4;W[i]=(b[q]<<24)|(b[q+1]<<16)|(b[q+2]<<8)|b[q+3];}
+    for(let i=16;i<64;i++){const x=W[i-15],y=W[i-2];const s0=((x>>>7)|(x<<25))^((x>>>18)|(x<<14))^(x>>>3),s1=((y>>>17)|(y<<15))^((y>>>19)|(y<<13))^(y>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0;}
+    let a=h0,bb=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+    for(let i=0;i<64;i++){const S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7)),ch=(e&f)^(~e&g),t1=(h+S1+ch+K[i]+W[i])|0,
+        S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)),mj=(a&bb)^(a&c)^(bb&c),t2=(S0+mj)|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0;}
+    h0=(h0+a)|0;h1=(h1+bb)|0;h2=(h2+c)|0;h3=(h3+d)|0;h4=(h4+e)|0;h5=(h5+f)|0;h6=(h6+g)|0;h7=(h7+h)|0;}
+  H[0]=h0;H[1]=h1;H[2]=h2;H[3]=h3;H[4]=h4;H[5]=h5;H[6]=h6;H[7]=h7;}
+/* st={H:Uint32Array(8), n:処理済みバイト数, buf:Uint8Array(64), bl:たまっているバイト数} */
+function start(mid){const H=new Uint32Array(mid?mid.H:[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  if(mid&&mid.n%64)throw new Error('midstate must be at a 64-byte boundary');return{H,n:mid?mid.n:0,buf:new Uint8Array(64),bl:0};}
+function update(st,b){let i=0;const L=b.length;
+  if(st.bl){while(st.bl<64&&i<L)st.buf[st.bl++]=b[i++];if(st.bl===64){blocks(st.H,st.buf,0,64);st.n+=64;st.bl=0;}}
+  const full=i+Math.floor((L-i)/64)*64;if(full>i){blocks(st.H,b,i,full);st.n+=full-i;i=full;}
+  while(i<L)st.buf[st.bl++]=b[i++];return st;}
+function mid(st){if(st.bl)throw new Error('not at a block boundary');return{H:Array.from(st.H),n:st.n};}
+function finish(st){const total=st.n+st.bl,pad=new Uint8Array(((st.bl+9+63)>>6)<<6);pad.set(st.buf.subarray(0,st.bl));pad[st.bl]=0x80;
+  const bits=total*8,hi=Math.floor(bits/4294967296),lo=bits>>>0,e=pad.length;pad[e-8]=hi>>>24;pad[e-7]=hi>>>16&255;pad[e-6]=hi>>>8&255;pad[e-5]=hi&255;pad[e-4]=lo>>>24;pad[e-3]=lo>>>16&255;pad[e-2]=lo>>>8&255;pad[e-1]=lo&255;
+  blocks(st.H,pad,0,pad.length);return Array.from(st.H,v=>(v>>>0).toString(16).padStart(8,'0')).join('');}
+return{start,update,mid,finish};
+}
+/* ============ v0.9.1 衣装の実装（iPhone だけで 次の版を つくる） ============
+   とりこんだ衣装に 番号（No.112〜）を つけ、次の版の index.html に 組みこむ。
+   - 公開中の index.html は part001〜part0K（16MiB ごと）＋最後の部分。衣装の絵は「絵の部分の最後」に 足すので、
+     part001〜part0K は 1バイトも 変わらない。iPhone では 変わる後半（part0K+1〜）と index.html.sha256 だけを つくる。
+   - 後半の もとのバイトは ゲームの中の 絵のスクリプト（DOM）から 正確に 組み立てる。全体の SHA-256 は
+     ビルド時に 埋めこんだ「先頭 T バイトの 途中状態」から 続きを 計算する（BUILD_INFO）。
+   - できた パーツは アップロードの上限（ブラウザは 1ファイル 25MiB）より 小さい zip に わけて 保存・共有する。 */
+const MY_SHA=Sha256Mid();
+const MK_BI=['/*__BUILD_'+'INFO__*/','/*__BUILD_'+'INFO_END__*/'],MK_BM=['/*__BUILTIN_'+'MY__*/','/*__BUILTIN_'+'MY_END__*/'];
+const MY_ZIP_MAX=20*1024*1024;
+function myJsonScript(o){return JSON.stringify(o).replace(/<\//g,'<\\/');}
+function myBIText(i){return myJsonScript({v:i.v,partBytes:i.partBytes,chunkStart:i.chunkStart,assetScripts:i.assetScripts,assetEnd:i.assetEnd,T:i.T,mid:i.mid,postPrefix:i.postPrefix,postSuffix:i.postSuffix,...(i.partGit?{partGit:i.partGit,partMid:i.partMid}:{})});}
+function myNextVersion(v){const m=/^v(\d+(?:\.\d+)*)$/.exec(String(v||''));if(!m)return'v0.9.1';const p=m[1].split('.').map(Number);if(p.length<3)p.push(1);else p[p.length-1]++;return'v'+p.join('.');}
+/* 実装ずみの衣装（この版に 組みこまれている）を 登録 */
+function registerBuiltinMy(){const built=Object.keys(ASSETS).length>0;
+  (Array.isArray(BUILTIN_MY)?BUILTIN_MY:[]).forEach(e=>{try{if(!e||!e.id||!e.file||!e.title)return;if(built&&(!ASSETS[e.file]||!ASSETS[e.title]))return;
+    ATLAS.yasuko.costumes[e.id]={file:e.file,cw:391,ch:415,cols:4,n:8,foot:[196,408],mine:true,builtin:true};
+    if(e.ratio>1)HIRES_YASUKO[e.file]=e.ratio;if(Array.isArray(e.viewBox)&&e.viewBox.length===4)Y_VIEW_BOX[e.file]=e.viewBox;
+    TITLE_FRONT[e.id]=e.title;WARD_FRONT_TITLE_IDS.add(e.id);MY_NUMBERS[e.id]=e.no;
+    const c={id:e.id,grp:'mine',mine:true,builtin:true,no:e.no,unlock:0,star:1,name:String(e.name||'衣装').slice(0,24),
+      ab:`とりこんだ衣装（No.${e.no}・${e.since||''}で実装）。基本衣装と 同じ 能力。`,shot:'rose',col:e.col||'#9b2c46',trail:e.trail||'#f6c1cc',mods:{}};
+    CMAP[e.id]=c;MY_ORDER.set(e.id,e.no);if(!MY_COSTUMES.some(x=>x.id===e.id))MY_COSTUMES.push(c);}catch(err){console.warn(err);}});
+  MY_COSTUMES.sort((a,b)=>(MY_ORDER.get(a.id)||0)-(MY_ORDER.get(b.id)||0));}
+function myNextNumber(){return myEffMax()+1;}
+/* ---- ZIP（無圧縮。中身は そのまま アップロードできる パーツ） ---- */
+const MY_CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function myCrc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=MY_CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function myZip(files){const enc=new TextEncoder(),d=new Date(),dt=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(),tm=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+  const out=[],cen=[];let off=0;const u16=v=>[v&255,v>>>8&255],u32=v=>[v&255,v>>>8&255,v>>>16&255,v>>>24&255];
+  for(const f of files){const nm=enc.encode(f.name),crc=myCrc32(f.data),sz=f.data.length;
+    const lh=new Uint8Array([0x50,0x4b,3,4,...u16(20),...u16(0),...u16(0),...u16(tm),...u16(dt),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0)]);
+    out.push(lh,nm,f.data);cen.push(new Uint8Array([0x50,0x4b,1,2,...u16(20),...u16(20),...u16(0),...u16(0),...u16(tm),...u16(dt),...u32(crc),...u32(sz),...u32(sz),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);
+    off+=lh.length+nm.length+sz;}
+  const cs=cen.reduce((a,b)=>a+b.length,0);out.push(...cen,new Uint8Array([0x50,0x4b,5,6,...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cs),...u32(off),...u16(0)]));
+  return new Blob(out,{type:'application/zip'});}
+function myDataUrl(buf,type){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(new Blob([buf],{type:type||'image/png'}));});}
+function myConcat(list){const n=list.reduce((a,b)=>a+b.length,0),o=new Uint8Array(n);let p=0;for(const b of list){o.set(b,p);p+=b.length;}return o;}
+/* ---- 次の版の 後半（変わる パーツ）を つくる ---- */
+async function myVerifyTail(BI,bytes){if(!/^https?:/.test(location.protocol))return'skip';const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),20000);
+  try{const r=await fetch(location.href.split('#')[0],{headers:{Range:`bytes=${BI.T}-${BI.assetEnd-1}`},cache:'no-cache',signal:ctl.signal});
+    if(r.status!==206){ctl.abort();return'skip';}const b=new Uint8Array(await r.arrayBuffer());if(b.length!==bytes.length)return'diff';for(let i=0;i<b.length;i++)if(b[i]!==bytes[i])return'diff';return'ok';}
+  catch(e){return'skip';}finally{clearTimeout(tm);}}
+/* ---- 保存・共有（iPhone: 共有シート →「"ファイル"に保存」） ---- */
+async function mySaveFiles(files){
+  if(navigator.canShare&&navigator.share){try{if(navigator.canShare({files})){await navigator.share({files,title:'やっこの冒険 実装パッケージ'});return'shared';}}catch(e){if(e&&e.name==='AbortError')return'cancel';}}
+  for(const f of files){const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},120000);}
+  return'downloaded';}
+/* ---- 画面 ---- */
+const myImplStyle=document.createElement('style');myImplStyle.id='v091-implement';myImplStyle.textContent=`
+#scrMyImpl{z-index:6;padding:calc(6px + env(safe-area-inset-top)) 8px calc(6px + env(safe-area-inset-bottom))}
+#scrMyImpl>.card{width:min(100%,560px);padding:8px 10px 12px;margin:0 auto;flex:none;text-align:left}
+#scrMyImpl .wardHead h2{font-size:22px!important}
+#scrMyImpl p,#scrMyImpl li{font-size:15px;line-height:1.55;margin:4px 0}
+#miList{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+#miList label{display:flex;align-items:center;gap:8px;border:2px solid #e3c47a;border-radius:10px;background:#fffdf6;padding:4px 8px;font-size:16px}
+#miList label.done{opacity:.6;border-style:dashed}
+#miList input{width:24px;height:24px;flex:none}
+#miList canvas{width:52px;height:56px;flex:none}
+#miList .no{margin-left:auto;font-weight:bold;color:var(--wine);white-space:nowrap}
+.miRow{display:flex;align-items:center;gap:8px;margin:8px 0;font-weight:bold;color:var(--wine)}
+#miVer{width:9em;font-size:18px;padding:6px 8px;border:2px solid #e3c47a;border-radius:10px;background:#fff;color:var(--ink);-webkit-user-select:text;user-select:text}
+#miOut{border:2px solid #b9d6a0;background:#f6fbef;border-radius:12px;padding:6px 10px;margin-top:8px}
+#miOut .f{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:15px}
+#miOut .f .btn{flex:none;white-space:nowrap}
+#miOut .f span{min-width:0;overflow-wrap:anywhere}
+#miOut .f .btn,#scrMyImpl .miSmall{width:auto;min-height:42px;font-size:15px;padding:4px 12px;margin:0;letter-spacing:0}
+#miOut ol{padding-left:1.3em;margin:6px 0}
+#miOut code{font-size:13px;background:#fff;border:1px solid #ddd;border-radius:4px;padding:0 3px;word-break:break-all}
+.miWarn{color:#a3283f;font-weight:bold}
+`;document.head.appendChild(myImplStyle);
+const myImpl=document.createElement('div');myImpl.id='scrMyImpl';myImpl.className='screen dim hidden';myImpl.innerHTML=`<div class="card">
+ <div class="wardHead"><h2>衣装を 実装する</h2><button class="btn sub small" id="miBack">もどる</button></div>
+ <p>とりこんだ衣装に <b>番号</b>を つけて、<b>次の版</b>の ゲームに 組みこみます。できた zip の中身を GitHub の <b>parts</b> フォルダに アップロードすると、どの端末でも その衣装で あそべます。</p>
+ <div id="miNote"></div>
+ <div id="miList"></div>
+ <div class="miRow">次の版 <input id="miVer" maxlength="16" autocomplete="off" enterkeyhint="done"></div>
+ <button class="btn" id="miMake">実装パッケージを つくる</button>
+ <div id="miOut" class="hidden"></div>
+ <div id="miTidy"></div>
+</div>`;
+document.getElementById('game').appendChild(myImpl);SCREENS.push('scrMyImpl');
+let myImplFrom='title',myLastPkg=null;
+function openMyImplement(){myImplFrom=MI&&MI.from||wardFrom||'title';myStopAnim();showOnly('scrMyImpl');$('scrMyImpl').scrollTop=0;$('miOut').classList.add('hidden');$('miOut').innerHTML='';myRenderImplement();}
+async function myRenderImplement(){const list=$('miList');list.innerHTML='';const local=MY_COSTUMES.filter(c=>!c.builtin),done=MY_COSTUMES.filter(c=>c.builtin);let no=myNextNumber();
+  $('miVer').value=myNextVersion(VERSION);
+  const can=!!(BUILD_INFO&&BUILD_INFO.v===1);
+  $('miNote').innerHTML=(can?'':'<p class="miWarn">この画面の版は 開発用（PCで開いた版）なので パッケージを つくれません。GitHub で公開している版で つかってください。</p>')+
+    (local.length?`<p>組みこむ 衣装を えらんでください（いまの版 ${VERSION} に ${done.length}着 実装ずみ）。番号は 上から じゅんに つきます。</p>`:'<p>まだ 実装していない 衣装は ありません。「＋とりこむ」で 衣装を くわえてから つかってください。</p>');
+  const add=(c,isDone)=>{const lb=document.createElement('label');lb.className=isDone?'done':'';const cb=document.createElement('input');cb.type='checkbox';cb.checked=!isDone;cb.disabled=isDone;cb.dataset.id=c.id;cb.onchange=myRenumber;
+    const cv=document.createElement('canvas');cv.width=104;cv.height=112;const f=yFrame(c.id,0);loadImg(f.file).then(()=>{const x=cv.getContext('2d');x.imageSmoothingQuality='high';drawYasukoDetail(x,f,0,0,104,112);});
+    const nm=document.createElement('span');nm.textContent=c.name;const n=document.createElement('span');n.className='no';n.textContent=isDone?`No.${viewerArtNumber(c.id)} 実装ずみ`:'';lb.append(cb,cv,nm,n);list.appendChild(lb);};
+  done.forEach(c=>add(c,true));local.forEach(c=>add(c,false));myRenumber();
+  myImplNote();
+  $('miMake').disabled=!can||(!local.length&&!myLayoutChanged());myRenderGhPanel();
+  /* 実装ずみの 取り込みデータ（この端末の 保存）を 整理 */
+  const recs=await MyStore.all(),stale=recs.filter(r=>r&&CMAP[r.id]&&CMAP[r.id].builtin);
+  $('miTidy').innerHTML=stale.length?`<p>この端末に、実装ずみ衣装の 取り込みデータが ${stale.length}件 のこっています（ゲームでは つかっていません）。</p><button class="btn sub miSmall" id="miTidyBtn">取り込みデータを 整理する</button>`:'';
+  if(stale.length)$('miTidyBtn').onclick=async()=>{const ok=await myAsk(`実装ずみの ${stale.length}件の 取り込みデータを この端末から けしますか？<br><small>ゲームの 衣装は きえません</small>`,'けす','やめる');if(!ok)return;for(const r of stale)await MyStore.del(r.id);toast('整理しました',2.5);myRenderImplement();};}
+function myRenumber(){let no=myNextNumber();$('miList').querySelectorAll('label:not(.done)').forEach(lb=>{const cb=lb.querySelector('input');lb.querySelector('.no').textContent=cb.checked?`No.${no++}`:'くみこまない';});}
+$('miBack').onclick=()=>{showOnly(null);openMyImport({from:myImplFrom});};
+$('miVer').addEventListener('keydown',e=>{if(e.key==='Enter')e.target.blur();});
+$('miMake').onclick=async()=>{const ids=[...$('miList').querySelectorAll('label:not(.done) input:checked')].map(i=>i.dataset.id);if(!ids.length&&!myLayoutChanged()){toast('組みこむ 衣装を えらんでね',2.5);return;}
+  let ver=($('miVer').value||'').trim();if(!/^v\d+(\.\d+)*$/.test(ver)){toast('版は v0.9.2 のように 入れてね',3);return;}
+  if(ver===VERSION){toast('いまと ちがう 版の 名前に してね',3);return;}
+  try{myBusy(true,'実装パッケージを つくっています',0);await new Promise(r=>setTimeout(r,40));
+    const pkg=await myMakePackage(ids,ver,(m,f)=>myBusy(true,m,f));myLastPkg=pkg;myBusy(false);myShowPackage(pkg);}
+  catch(e){console.error(e);myBusy(false);toast('つくれませんでした<br><small>'+String(e&&e.message||e).slice(0,120)+'</small>',7);}};
+function myFmtMB(n){return(n/1048576).toFixed(1)+'MB';}
+function myShowPackage(pkg){const o=$('miOut');o.classList.remove('hidden');const files=pkg.parts.map(p=>p.name).concat('index.html.sha256');
+  o.innerHTML=`<p><b>${pkg.ver}</b> の 実装パッケージが できました（${myEsc(myPkgSummary(pkg))}）。${pkg.newBytes<pkg.oldBytes?`<br>ファイルは ${myFmtMB(pkg.oldBytes)} → <b>${myFmtMB(pkg.newBytes)}</b> に 小さく なります。`:''}</p>
+   <div id="miFiles"></div>
+   <button class="btn" id="miSaveAll">まとめて 保存する</button>
+   <ol>
+    <li>「保存」→ 共有の画面で <b>「"ファイル"に保存」</b>。</li>
+    <li>「ファイル」アプリで zip を タップすると、同じ名前の フォルダに ひらきます。</li>
+    <li>Safari で GitHub の リポジトリを ひらき、<b>parts</b> フォルダへ（ボタンが 見えないときは「ぁあ」→「デスクトップ用Webサイトを表示」）。</li>
+    <li>「Add file」→「Upload files」→「choose your files」で、ひらいた フォルダの ${files.map(n=>`<code>${n}</code>`).join(' ')} を <b>ぜんぶ</b> えらぶ${pkg.zips.length>1?'（zip が '+pkg.zips.length+'つ あるときは 全部の フォルダから）':''}。同じ名前の ファイルは 上書きされます。</li>
+    <li>「Commit changes」。数分で Actions が おわったら ゲームを ひらきなおし、タイトルの 版が <b>${pkg.ver}</b> なら 完了です。</li>
+   </ol>
+   <p style="font-size:13px;color:#6a4a30">${pkg.firstPart>1?`part001〜part${String(pkg.firstPart-1).padStart(3,'0')} は 変わりません（アップロード不要）。`:'すべての パーツが 変わります。'}${pkg.firstPart+pkg.parts.length-1<pkg._oldTotal?`GitHub の parts に part${String(pkg.totalParts+1).padStart(3,'0')} 以降が あれば 削除してください。`:''}全体 ${myFmtMB(pkg.newBytes)}・SHA-256 ${pkg.sha.slice(0,16)}…${pkg.verified==='ok'?'・公開中の ファイルと 照合ずみ':''}</p>`;
+  const fl=$('miFiles');pkg.zips.forEach(z=>{const d=document.createElement('div');d.className='f';const b=document.createElement('button');b.className='btn sub';b.textContent='保存';b.onclick=async()=>mySaveFiles(await myMakeFiles([z]));
+    const s=document.createElement('span');s.textContent=`${z.name}（${myFmtMB(z.size)}）`;d.append(b,s);fl.appendChild(d);});
+  $('miSaveAll').onclick=async()=>{try{myBusy(true,'zip を つくっています',0.3);const f=await myMakeFiles(pkg.zips);myBusy(false);await mySaveFiles(f);}catch(e){myBusy(false);toast(myEsc(e.message),4);}};o.scrollIntoView({block:'start'});myGhAfterPackage(pkg);}
+/* ============ v0.10 一括とりこみ・並べかえ・第2のひみつ・GitHub 自動配置 ============
+   - 何枚でも いっしょに えらぶ → 1枚ずつ 自動で 人物を さがし・切りぬき → 色と えらんだ順で 衣装ごとに まとめる
+     （8方向図／つづきの絵／1枚ずつの向き／高画質の 正面立ち絵）→ 1着ずつ 確認（まちがいだけ なおす）→ くわえる。
+   - 衣装の 並べかえと 第2のひみつ（素体を ひらくまで かくす）を この端末で すぐ 変えられ、「実装」で 次の版に 入る。
+   - 「実装」で GitHub の parts（と ないときは scripts/assemble.py）を 1回の コミットで 自動配置（GitHub API・トークン）。 */
+const MK_LO=['/*__LAYO'+'UT__*/','/*__LAYO'+'UT_END__*/'];
+const LAYOUT_KEY='yakko-layout-draft-v1',GH_KEY='yakko-github-v1';
+const MY_DEFAULT_S2={};COSTUMES.forEach(c=>{MY_DEFAULT_S2[c.id]=!!c.secret2;});
+/* v0.10: 元の衣装の 写し（けす・もどす 用）。けした衣装は 一覧・衣装えらび・マニュアル・ごほうびから はずれ、「実装」で 絵も ファイルから ぬける */
+const MY_ORIG=new Map();COSTUMES.forEach((c,i)=>{const a=ATLAS.yasuko.costumes[c.id],t=TITLE_FRONT[c.id];MY_ORIG.set(c.id,{c,i,atlas:a,title:t,ward:WARD_FRONT_TITLE_IDS.has(c.id),files:[a&&a.file,t].filter(Boolean)});});
+const MY_STASH=new Map();/* この端末で けしている 衣装: id → もどす ための 情報 */
+const myHas=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+/* ---- 並び・第2のひみつ・削除・番号 ---- */
+function myLayoutDraft(){try{const v=JSON.parse(localStorage.getItem(LAYOUT_KEY)||'null');return v&&Array.isArray(v.order)?v:null;}catch(e){return null;}}
+function myLayoutBuilt(){return LAYOUT_OVERRIDE&&Array.isArray(LAYOUT_OVERRIDE.order)?LAYOUT_OVERRIDE:null;}
+function myLayout(){return myLayoutDraft()||myLayoutBuilt();}
+function myBuiltDeleted(){const L=myLayoutBuilt();return new Set(L&&Array.isArray(L.deleted)?L.deleted:[]);}
+function myDeletedIds(){const L=myLayout(),s=myBuiltDeleted();if(L&&Array.isArray(L.deleted))L.deleted.forEach(id=>s.add(id));return s;}
+function myNumbers(){const L=myLayout();return L&&L.numbers&&typeof L.numbers==='object'?L.numbers:{};}
+function myDefaultNumber(id){return myHas(FIXED_ART_NUMBERS,id)?FIXED_ART_NUMBERS[id]:myHas(MY_NUMBERS,id)?MY_NUMBERS[id]:null;}
+function myCanDelete(id){const c=CMAP[id]||(MY_STASH.get(id)||{}).c;return!!c&&!c.special&&id!=='basic'&&id!=='goddess';}
+function myDefaultOrder(){const L=[...WARD_DISPLAY_IDS],g=L.indexOf('goddess');L.splice(g<0?L.length:g,0,...MY_COSTUMES.map(c=>c.id));return L.filter(id=>CMAP[id]);}
+function myOrderIds(){const base=myDefaultOrder(),L=myLayout();if(!L)return base;const ok=new Set(base),seen=new Set(),out=[];
+  for(const id of L.order)if(ok.has(id)&&!seen.has(id)){out.push(id);seen.add(id);}
+  /* 並びに ない衣装（あとから くわえた衣装）は もとの となりの 前に */
+  for(let i=0;i<base.length;i++){const id=base[i];if(seen.has(id))continue;let pos=out.length;for(let j=i+1;j<base.length;j++){const k=out.indexOf(base[j]);if(k>=0){pos=k;break;}}out.splice(pos,0,id);seen.add(id);}
+  return out;}
+/* 番号の つく 絵（いまの 並び。素体の 絵は 最後 = マニュアルの 拡大鑑賞と 同じ じゅん） */
+function myArtIds(){return[...myOrderIds().filter(id=>myDefaultNumber(id)!=null),...Object.keys(BASE_NAME).map(b=>'base_'+b).filter(id=>myDefaultNumber(id)!=null)];}
+function myEffMax(){let m=0;for(const id of myArtIds()){const n=viewerArtNumber(id);if(n!=null&&n>m)m=n;}return m;}
+function mySecret2Default(id){return myHas(MY_DEFAULT_S2,id)?MY_DEFAULT_S2[id]:false;}
+/* けす・もどす（この端末では すぐ。絵が ファイルに ある あいだは もどせる） */
+function myApplyDeletions(){const del=myDeletedIds(),built=myBuiltDeleted();
+  for(const id of del){if(MY_STASH.has(id)||!CMAP[id]||!myCanDelete(id))continue;const c=CMAP[id];
+    if(MY_ORIG.has(id)){const i=COSTUMES.indexOf(c);if(i>=0)COSTUMES.splice(i,1);MY_STASH.set(id,{c,orig:true});}
+    else if(c.builtin){const i=MY_COSTUMES.indexOf(c);if(i>=0)MY_COSTUMES.splice(i,1);MY_STASH.set(id,{c,atlas:ATLAS.yasuko.costumes[id],title:TITLE_FRONT[id]});}
+    else continue;/* まだ 実装していない とりこみ衣装は その場で けす（MyStore） */
+    delete CMAP[id];delete ATLAS.yasuko.costumes[id];delete TITLE_FRONT[id];WARD_FRONT_TITLE_IDS.delete(id);}
+  for(const [id,st] of [...MY_STASH]){if(del.has(id)||built.has(id))continue;const c=st.c;
+    if(st.orig){const o=MY_ORIG.get(id);let at=COSTUMES.findIndex(x=>MY_ORIG.has(x.id)&&MY_ORIG.get(x.id).i>o.i);if(at<0)at=COSTUMES.length;COSTUMES.splice(at,0,c);
+      ATLAS.yasuko.costumes[id]=o.atlas;if(o.title)TITLE_FRONT[id]=o.title;if(o.ward)WARD_FRONT_TITLE_IDS.add(id);}
+    else{MY_COSTUMES.push(c);MY_COSTUMES.sort((a,b)=>(MY_ORDER.get(a.id)||0)-(MY_ORDER.get(b.id)||0));ATLAS.yasuko.costumes[id]=st.atlas;if(st.title)TITLE_FRONT[id]=st.title;WARD_FRONT_TITLE_IDS.add(id);}
+    CMAP[id]=c;MY_STASH.delete(id);}
+  if(typeof save!=='undefined'&&save&&save.costume&&save.costume!=='base'&&!CMAP[save.costume]){save.costume='basic';try{writeSave();}catch(e){}}}
+function applyCostumeLayout(){myApplyDeletions();const L=myLayout(),s2=L&&L.secret2||{};
+  for(const c of [...COSTUMES,...MY_COSTUMES]){if(!c||c.special)continue;c.secret2=myHas(s2,c.id)?!!s2[c.id]:mySecret2Default(c.id);
+    if(c.builtin){const n=viewerArtNumber(c.id);if(n!=null)c.ab=c.ab.replace(/No\.\d+/,'No.'+n);}}
+  iconCache.clear();}
+/* くらべる・書きこむ ための 形（この版に ある 衣装だけ。extra: 次の版で ふえる 衣装、drop: 次の版で ファイルから ぬける 衣装） */
+function myLayoutCanon(L,extra,drop){if(!L)return null;const known=new Set([...MY_ORIG.keys(),...(Array.isArray(BUILTIN_MY)?BUILTIN_MY.map(e=>e.id):[]),...(extra||[])]);for(const d of drop||[])known.delete(d);
+  const del=[...new Set([...(L.deleted||[]),...myBuiltDeleted()])].filter(id=>known.has(id)).sort(),ds=new Set(del);
+  const order=(L.order||[]).filter(id=>known.has(id)&&!ds.has(id));
+  const s2={};Object.keys(L.secret2||{}).sort().forEach(k=>{if(known.has(k)&&!ds.has(k)&&!!L.secret2[k]!==mySecret2Default(k))s2[k]=!!L.secret2[k];});
+  const nums={};const N=L.numbers||{};Object.keys(N).sort().forEach(k=>{const v=N[k];if((known.has(k)||k.startsWith('base_'))&&!ds.has(k)&&Number.isInteger(v)&&v>0&&v!==myDefaultNumber(k))nums[k]=v;});
+  const o={order,secret2:s2};if(del.length)o.deleted=del;if(Object.keys(nums).length)o.numbers=nums;return o;}
+function myLayoutText(L,extra,drop,src){const o=myLayoutCanon(L,extra,drop);if(o&&src)o.src=src;return o?myJsonScript(o):'null';}
+function mySaveLayoutDraft(order,s2,more){more=more||{};const cur=myLayout()||{};const L={order:order.slice(),secret2:{},deleted:[...new Set([...(more.deleted||cur.deleted||[]),...myBuiltDeleted()])],numbers:{...(more.numbers||cur.numbers||{})},
+    stamp:Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36),base:VERSION};
+  Object.keys(s2||{}).forEach(k=>{if(!!s2[k]!==mySecret2Default(k))L.secret2[k]=!!s2[k];});
+  try{localStorage.setItem(LAYOUT_KEY,JSON.stringify(L));}catch(e){toast('並びを 保存できませんでした',3);}applyCostumeLayout();}
+function myLayoutChanged(){const d=myLayoutDraft();if(!d)return false;return myLayoutText(d)!==myLayoutText(myLayoutBuilt());}
+function myLayoutSync(){/* 公開版に 入った 下書き（または 同じ 中身）は けす */const d=myLayoutDraft(),b=myLayoutBuilt();
+  if(d&&((b&&b.src&&d.stamp===b.src)||myLayoutText(d)===myLayoutText(b))){try{localStorage.removeItem(LAYOUT_KEY);}catch(e){}}}
+function myOrigName(id){const st=MY_STASH.get(id),c=CMAP[id]||st&&st.c||(MY_ORIG.get(id)||{}).c;return c?c.name.replace('\n',''):id;}
+
+/* ---- 共通: えらぶ だけの 小さな画面 ---- */
+function myChoose(title,opts){return new Promise(res=>{const d=document.createElement('div');d.id='mcAsk';d.innerHTML=`<div class="box"><div class="msg">${title}</div><div class="mcChoices"></div><button class="btn sub" id="mcChooseNo">やめる</button></div>`;
+  document.body.appendChild(d);const box=d.querySelector('.mcChoices');opts.forEach((o,i)=>{const b=document.createElement('button');b.className='btn sub';b.textContent=o;b.onclick=()=>{d.remove();res(i);};box.appendChild(b);});
+  $('mcChooseNo').onclick=()=>{d.remove();res(-1);};});}
+const myV010Style=document.createElement('style');myV010Style.id='v010-my';myV010Style.textContent=`
+.mcChoices{display:flex;flex-direction:column;gap:4px;max-height:55dvh;overflow:auto;margin:8px 0}
+.mcChoices .btn{min-height:44px;font-size:16px;margin:0}
+#mcBatch .mbCard{border:2px solid #e3c47a;border-radius:12px;background:#fffdf6;padding:6px 8px;margin:8px 0;text-align:left}
+#mcBatch .mbCard.done{border-color:#9cc98a;background:#f6fbef}#mcBatch .mbCard.skip{opacity:.55}
+#mcBatch .mbHead{display:flex;align-items:center;gap:6px;font-weight:bold;color:var(--wine);font-size:16px}
+#mcBatch .mbHead canvas{width:58px;height:62px;flex:none}
+#mcBatch .mbHead .st{margin-left:auto;font-size:13px;color:#4a7a30;white-space:nowrap}
+#mcBatch .mbFiles{display:flex;gap:5px;overflow-x:auto;padding:4px 0}
+#mcBatch .mbFiles button{flex:0 0 auto;border:2px solid #e3c47a;border-radius:8px;background:#fff;padding:2px;font-size:11px;color:var(--ink);font-family:var(--ui);display:flex;flex-direction:column;align-items:center}
+#mcBatch .mbFiles button canvas{height:64px;width:auto}
+#mcBatch .mbFiles button.portrait{border-color:#2a7de1}
+#mcBatchNav{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:2px 0 6px;font-weight:bold;color:var(--wine)}
+#mcBatchNav .btn{width:auto;min-height:40px;font-size:14px;padding:3px 10px;margin:0;letter-spacing:0}
+#scrMyOrder{z-index:6;padding:calc(6px + env(safe-area-inset-top)) 8px calc(6px + env(safe-area-inset-bottom))}
+#scrMyOrder>.card{width:min(100%,560px);padding:8px 10px 12px;margin:0 auto;flex:none;text-align:left}
+#scrMyOrder .wardHead h2{font-size:21px!important}
+#moBar{position:sticky;top:0;z-index:2;background:#fff6df;border:2px solid var(--wine);border-radius:12px;padding:6px 8px;margin:6px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#moBar b{width:100%;color:var(--wine);font-size:15px}
+#moBar .btn,#scrMyOrder .moSmall{width:auto;min-height:42px;font-size:15px;padding:3px 12px;margin:0;letter-spacing:0}
+.moRow{display:flex;align-items:center;gap:6px;border:2px solid #ead29a;border-radius:10px;background:#fffdf6;padding:3px 6px;margin:4px 0;font-size:15px;color:var(--ink)}
+.moRow.sel{border-color:var(--wine);box-shadow:0 0 0 3px #fff,0 0 0 5px var(--wine)}
+.moRow.hid{background:#f1ecf8}
+.moRow .n{width:2.2em;text-align:right;color:#8a6a4a;font-size:13px;flex:none}
+.moRow canvas{width:40px;height:43px;flex:none}
+.moRow .nm{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.25}
+.moRow .nm small{display:block;color:#8a6a4a;font-size:11px}
+.moRow label{display:flex;align-items:center;gap:3px;font-size:12px;color:#5a3a7a;white-space:nowrap;flex:none}
+.moRow input{width:24px;height:24px}
+#miGh{margin-top:10px;border:1px solid #ead29a;border-radius:10px;padding:4px 8px;background:#fffaf0}
+#miGh summary{font-weight:bold;color:var(--wine);padding:4px 0}
+#miGh label{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:14px;flex-wrap:wrap}
+#miGh input[type=text],#miGh input[type=password]{flex:1;min-width:8em;font-size:16px;padding:6px 8px;border:2px solid #e3c47a;border-radius:8px;background:#fff;color:var(--ink);-webkit-user-select:text;user-select:text}
+#miGh input[type=checkbox]{width:22px;height:22px}
+#miGhMsg{font-size:13px;color:#4a5a30;margin:4px 0;white-space:pre-wrap}
+`;document.head.appendChild(myV010Style);
+
+/* ---- 一括とりこみ ---- */
+let MB=null;
+(function(){/* 「＋とりこむ」の 最初の画面に 一覧パネルと ボタンを たす */
+  const work=$('mcWork');const nav=document.createElement('div');nav.id='mcBatchNav';nav.className='hidden';work.prepend(nav);
+  const b=document.createElement('div');b.id='mcBatch';b.className='hidden';work.parentElement.insertBefore(b,work);
+  const intro=$('mcIntro');const ob=document.createElement('button');ob.className='btn sub';ob.id='mcOrderOpen';ob.textContent='↕ 衣装の 並べかえ・けす・番号・第2のひみつ';intro.appendChild(ob);ob.onclick=()=>openMyOrder();
+  $('mcPick').textContent='📂 絵を えらぶ（何枚でも）';})();
+function myGroupName(n){let k=MY_COSTUMES.length+n,nm;do{nm='とりこみ衣装 '+k;k++;}while(MY_COSTUMES.some(c=>c.name===nm));return nm;}
+async function myBatchStart(fl){const from=MI?MI.from:'title';MB={from,files:fl.map(f=>({name:f.name||'image',type:f.type||'image/*',blob:f,res:null,thumb:null})),groups:[],cur:-1};
+  try{for(let k=0;k<MB.files.length;k++){const f=MB.files[k],lab=`（${k+1}/${MB.files.length}まい目）`;
+      myBusy(true,'絵を よみこんでいます'+lab,k/MB.files.length);const img=await myDecode(f.blob);f.scale=img.scale;f.ow=img.ow;f.oh=img.oh;
+      /* 一覧用の 小さな絵（デコードした 大きな画素は すぐ すてる） */
+      {const t=document.createElement('canvas');t.width=img.w;t.height=img.h;t.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(img.buf),img.w,img.h),0,0);
+        const k2=Math.min(1,320/Math.max(img.w,img.h)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.w*k2));c.height=Math.max(1,Math.round(img.h*k2));const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(t,0,0,c.width,c.height);t.width=1;f.thumb=c;}
+      f.res=await MyCut.run({cmd:'sheet',w:img.w,h:img.h,buf:img.buf,opt:{bgMode:'auto',grid:null,protectWhite:false,ground:true,sheer:true}},p=>{
+        myBusy(true,(p.stage==='detect'?'人物を さがしています':`背景を けしています ${p.done+1}/${p.total}`)+lab,(k+(p.stage==='detect'?0.1:0.15+0.85*p.done/Math.max(1,p.total)))/MB.files.length);});
+      img.buf=null;}
+    myBusy(true,'衣装ごとに まとめています',0.99);
+    const info=MB.files.map(f=>({figs:(f.res&&f.res.figs||[]).filter(Boolean).map(x=>({sig:x.sig,feat:x.feat,h:x.h})),portrait:!!(f.res&&f.res.portrait)}));
+    MB.groups=MY_ENG.groupFiles(info).filter(g=>g.reason!=='none').map((g,i)=>({members:g.members,name:myGroupName(i),status:'todo'}));
+    const none=MB.files.filter((f,i)=>!MB.groups.some(g=>g.members.some(m=>m.file===i))).length;
+    myBusy(false);myBatchShow(none);}
+  catch(e){console.error(e);myBusy(false);toast('絵を しらべられませんでした<br><small>'+String(e&&e.message||e).slice(0,80)+'</small>',6);}}
+const MB_ROLE={sheet:'向きの絵',portrait:'立ち絵'};
+function myBatchShow(none){showOnly('scrMyCos');$('mcIntro').classList.add('hidden');$('mcWork').classList.add('hidden');const B=$('mcBatch');B.classList.remove('hidden');myStopAnim();
+  const todo=MB.groups.filter(g=>g.status==='todo').length,done=MB.groups.filter(g=>g.status==='done').length;
+  B.innerHTML=`<p>${MB.files.length}まいの 絵から <b>${MB.groups.length}着</b>の 衣装を 見つけました${none?`（人物が ない絵 ${none}まいは つかいません）`:''}。<br>まとめかたが ちがうときは 絵を タップして なおしてください。</p><div id="mbList"></div>
+   ${todo?`<button class="btn" id="mbStart">1着ずつ 確認して くわえる（のこり ${todo}着）</button><button class="btn sub" id="mbAll">確認せずに ぜんぶ くわえる</button>`:`<p><b>${done}着</b> くわえました。</p><button class="btn" id="mbEnd">衣装えらびへ</button>`}`;
+  const list=$('mbList');
+  MB.groups.forEach((g,gi)=>{const card=document.createElement('div');card.className='mbCard '+(g.status==='done'?'done':g.status==='skip'?'skip':'');
+    const head=document.createElement('div');head.className='mbHead';const cv=document.createElement('canvas');cv.width=116;cv.height=124;myBatchFront(g,cv);
+    const nm=document.createElement('span');nm.textContent=`${gi+1}. ${g.name}`;const st=document.createElement('span');st.className='st';st.textContent=g.status==='done'?'✓ くわえた':g.status==='skip'?'とばした':'';
+    head.append(cv,nm,st);card.appendChild(head);const fl=document.createElement('div');fl.className='mbFiles';
+    g.members.forEach(m=>{const f=MB.files[m.file],b=document.createElement('button');b.className=m.role==='portrait'?'portrait':'';const t=document.createElement('canvas');t.width=f.thumb?f.thumb.width:10;t.height=f.thumb?f.thumb.height:10;if(f.thumb)t.getContext('2d').drawImage(f.thumb,0,0);
+      const lb=document.createElement('span');const nf=(f.res&&f.res.figs||[]).filter(Boolean).length;lb.textContent=`${MB_ROLE[m.role]}・${nf}人`;b.append(t,lb);b.disabled=g.status==='done';b.onclick=()=>myBatchMove(gi,m.file);fl.appendChild(b);});
+    card.appendChild(fl);list.appendChild(card);});
+  if($('mbStart'))$('mbStart').onclick=()=>myBatchNext();if($('mbAll'))$('mbAll').onclick=()=>myBatchAll();if($('mbEnd'))$('mbEnd').onclick=()=>{const last=MB.groups.filter(g=>g.savedId).pop();const from=MB.from;MB=null;MI={from};myBackToWard(last&&last.savedId);};}
+function myBatchFront(g,cv){/* カードの 小さな正面（ざっくり: 立ち絵か いちばん正面らしい人物） */const x=cv.getContext('2d');x.clearRect(0,0,cv.width,cv.height);let best=null;
+  for(const m of g.members){const f=MB.files[m.file];for(const fg of (f.res&&f.res.figs||[]))if(fg){const sc=(m.role==='portrait'?10:0)+fg.feat.sym+fg.feat.face;if(!best||sc>best.sc)best={fg,sc};}}
+  if(!best)return;const fg=best.fg,c=document.createElement('canvas');c.width=fg.w;c.height=fg.h;c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(fg.data),fg.w,fg.h),0,0);
+  const k=Math.min(cv.width/fg.w,cv.height/fg.h);x.imageSmoothingQuality='high';x.drawImage(c,(cv.width-fg.w*k)/2,(cv.height-fg.h*k)/2,fg.w*k,fg.h*k);}
+async function myBatchMove(gi,fi){const g=MB.groups[gi],m=g.members.find(x=>x.file===fi);const opts=[],acts=[];
+  MB.groups.forEach((h,hi)=>{if(hi!==gi&&h.status!=='done'){opts.push(`${hi+1}. ${h.name} へ うつす`);acts.push(()=>{g.members=g.members.filter(x=>x.file!==fi);h.members.push({file:fi,role:'sheet'});h.members.sort((a,b)=>a.file-b.file);});}});
+  opts.push('新しい 衣装に する');acts.push(()=>{g.members=g.members.filter(x=>x.file!==fi);MB.groups.push({members:[{file:fi,role:'sheet'}],name:myGroupName(MB.groups.length),status:'todo'});});
+  if(m.role==='portrait'){opts.push('向きの絵として つかう');acts.push(()=>{m.role='sheet';});}else{opts.push('正面の 立ち絵に する（タイトル・衣装えらび・マニュアル用）');acts.push(()=>{g.members.forEach(x=>{if(x.role==='portrait')x.role='sheet';});m.role='portrait';});}
+  opts.push('この絵は つかわない');acts.push(()=>{g.members=g.members.filter(x=>x.file!==fi);});
+  const k=await myChoose(`「${MB.files[fi].name.replace(/</g,'&lt;')}」を どうしますか？`,opts);if(k<0)return;acts[k]();
+  MB.groups=MB.groups.filter(h=>h.members.length);myBatchShow();}
+function myBatchSources(g){const ok=JSON.stringify({bgMode:'auto',grid:null,protectWhite:false,ground:true,sheer:true});
+  return g.members.map(m=>{const f=MB.files[m.file];return{name:f.name,type:f.type,blob:f.blob,bytes:null,role:m.role,img:null,res:f.res,optKey:ok,thumb:f.thumb,scale:f.scale,ow:f.ow,oh:f.oh};});}
+async function myBatchOpenGroup(gi){const g=MB.groups[gi];MB.cur=gi;MI=myNewSession(MB.from);MI.batch={gi};MI.name=g.name;MI.sources=myBatchSources(g);$('mcName').value='';
+  showOnly('scrMyCos');$('mcBatch').classList.add('hidden');$('mcIntro').classList.add('hidden');await myProcessAll(false);}
+function myBatchNext(){const gi=MB.groups.findIndex(g=>g.status==='todo');if(gi<0){myBatchShow();return;}myBatchOpenGroup(gi);}
+function myBatchNav(){const nav=$('mcBatchNav');if(!MI||!MI.batch||!MB){nav.classList.add('hidden');$('mcSave').textContent='この衣装を くわえる';return;}
+  const gi=MI.batch.gi,n=MB.groups.length;nav.classList.remove('hidden');nav.innerHTML=`<span>衣装 ${gi+1}/${n}</span><button class="btn sub" id="mbSkip">この衣装は とばす</button><button class="btn sub" id="mbList2">一覧へ</button>`;
+  $('mbSkip').onclick=()=>{MB.groups[gi].status='skip';myStopAnim();myBatchNext();};$('mbList2').onclick=()=>{myStopAnim();myBatchShow();};
+  $('mcSave').textContent=MB.groups.some((g,i)=>i!==gi&&g.status==='todo')?'この衣装を くわえて つぎへ':'この衣装を くわえて おわる';}
+function myBatchAfterSave(id){const g=MB.groups[MI.batch.gi];g.status='done';g.savedId=id;MI=null;if(MB.groups.some(h=>h.status==='todo'))myBatchNext();else myBatchShow();}
+async function myBatchAll(){const ids=[];try{for(let gi=0;gi<MB.groups.length;gi++){const g=MB.groups[gi];if(g.status!=='todo')continue;
+      myBusy(true,`衣装を くわえています ${gi+1}/${MB.groups.length}`,gi/MB.groups.length);
+      MI=myNewSession(MB.from);MI.batch={gi};MI.sources=myBatchSources(g);myCollectFigs();if(!MI.figs.length){g.status='skip';continue;}await myAutoAssign();
+      const r=await mySaveCurrent(g.name,gi);g.status='done';g.savedId=r.id;ids.push(r.id);}
+    myBusy(false);MI=null;toast(`${ids.length}着 くわえました！`,3);myBatchShow();}
+  catch(e){console.error(e);myBusy(false);toast('くわえられませんでした<br><small>'+String(e&&e.message||e).slice(0,80)+'</small>',6);myBatchShow();}}
+/* ---- 保存（1着） ---- */
+async function mySaveCurrent(name,seq){await Promise.all(MI.sources.map(async s=>{if(!s.bytes&&s.blob)s.bytes=await myBlobBuf(s.blob);}));
+  const plan=myPlan(),atlas=myComposeAtlas(plan),vb=myViewBox(atlas,plan),title=myTitleCanvas();
+  const front=MI.figs[MI.frames[0].fig],mc=MY_ENG.mainColor(front)||[155,44,70];const col=myHex(mc.map(v=>v*0.72)),trail=myHex(mc.map(v=>v+(255-v)*0.7));
+  const sheet=await myCanvasBuf(atlas),tbuf=await myCanvasBuf(title);atlas.width=1;
+  const now=Date.now()+(seq||0),id=MI.editId||('my_'+now.toString(36)+Math.floor(Math.random()*1296).toString(36));
+  const rec={id,rev:MI.editId?MI.rev:1,ver:1,engine:MY_ENG.ENGINE_VERSION,name,created:MI.created||now,updated:now,order:MI.order||now,ratio:plan.ratio,viewBox:vb,col,trail,
+    sheet:{type:'image/png',buf:sheet},title:{type:'image/png',buf:tbuf},titleFrom:myUsePortrait()?'portrait':'sheet',figCount:MI.figs.length,
+    frames:MI.frames.map(f=>({fig:f.fig,mirror:!!f.mirror,how:f.how})),opts:MI.opts,
+    sources:MI.sources.filter(s=>s.bytes).map(s=>({name:s.name,type:s.type,role:s.role,buf:s.bytes,w:s.img?s.img.ow:(s.ow||0),h:s.img?s.img.oh:(s.oh||0)}))};
+  const stored=await MyStore.put(rec);registerMyCostume(rec);applyCostumeLayout();return{id,stored,name};}
+$('mcSave').onclick=async()=>{if(!MI||!MI.frames)return;const name=($('mcName').value||'').trim().slice(0,20)||myDefaultName();
+  try{myBusy(true,'衣装を つくっています',0.3);await new Promise(r=>setTimeout(r,30));const r=await mySaveCurrent(name,MI.batch?MI.batch.gi:0);myBusy(false);
+    toast(`新しい衣装『${name.replace(/</g,'&lt;')}』を くわえました！`+(r.stored?'':'<br><small>この端末では 保存できないため、とじると きえます</small>'),r.stored?3:7);
+    if(MI.batch&&MB)myBatchAfterSave(r.id);else myBackToWard(r.id);}
+  catch(e){console.error(e);myBusy(false);toast('衣装を 保存できませんでした<br><small>'+String(e&&e.message||e).slice(0,80)+'</small>',6);}};
+
+/* ---- 並べかえ・第2のひみつ・けす・番号 画面 ---- */
+const myOrderScr=document.createElement('div');myOrderScr.id='scrMyOrder';myOrderScr.className='screen dim hidden';myOrderScr.innerHTML=`<div class="card">
+ <div class="wardHead"><h2>並べかえ・けす・番号</h2><button class="btn sub small" id="moBack">もどる</button></div>
+ <p class="mcNote" style="font-size:14px;margin:4px 0">衣装を タップして えらび、▲▼ か、うつしたい ところの 衣装を タップ（そこへ うつります）。「ひみつ2」に チェックした 衣装は 第2のひみつ（素体を ひらく）まで かくれます。「けす」で 衣装を けせます。<br>この端末では すぐ かわります。「実装」すると 次の版に 入ります（けした 衣装の 絵は ファイルからも ぬけて 小さく なります。GitHub の「前の版に もどす」で もどせます）。</p>
+ <div id="moBar" class="hidden"></div>
+ <div id="moList"></div>
+ <div id="moDel"></div>
+ <div class="mcRow" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><button class="btn sub moSmall" id="moNum">番号を ふりなおす…</button><button class="btn sub moSmall" id="moBuilt">公開中の 並びに もどす</button><button class="btn sub moSmall" id="moDefault">最初の 並び（第3稿）に もどす</button></div>
+</div>`;
+document.getElementById('game').appendChild(myOrderScr);SCREENS.push('scrMyOrder');
+const myOrderStyle=document.createElement('style');myOrderStyle.textContent=`.moRow .del{flex:0 0 auto;width:auto!important;min-width:0!important;min-height:36px;padding:2px 10px!important;font-size:13px!important;margin:0!important;white-space:nowrap}
+#moDel{margin-top:10px}#moDel h3{font-size:15px;margin:6px 0;color:#7a2a3a}#moDel .moRow{background:#f7f1f1;border-color:#d9b9b9}#moDel .moRow .nm small{color:#8a5a5a}`;document.head.appendChild(myOrderStyle);
+let moSel=null,moFrom='title';
+function openMyOrder(){moFrom=MI&&MI.from||'title';myStopAnim();moSel=null;showOnly('scrMyOrder');$('scrMyOrder').scrollTop=0;myRenderOrder();}
+function myOrderState(){const ids=myOrderIds();const s2={};for(const id of ids){const c=CMAP[id];if(c&&!c.special)s2[id]=!!c.secret2;}return{ids,s2};}
+function myEsc0(t){return String(t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
+async function myDeleteCostume(id){const c=CMAP[id];if(!c||!myCanDelete(id))return;const nm=myEsc0(c.name.replace('\n',''));
+  if(c.mine&&!c.builtin){if(!await myAsk(`『${nm}』を けしますか？<br><small>まだ 実装していない とりこみ衣装なので、とりこんだ 絵も この端末から けします（もどせません）。</small>`,'けす','やめる'))return;
+    await MyStore.del(id);unregisterMyCostume(id);}
+  else{const no=viewerArtNumber(id);if(!await myAsk(`『${nm}』${no!=null?'（No.'+no+'）':''}を けしますか？<br><small>この端末では すぐ 一覧から きえます（「実装」するまでは ここで もどせます）。「実装」すると 次の版から 絵も ぬけて ファイルが 小さく なります。そのあとも GitHub の「前の版に もどす」で もどせます。</small>`,'けす','やめる'))return;
+    const st=myOrderState(),L=myLayout()||{};mySaveLayoutDraft(st.ids,st.s2,{deleted:[...new Set([...(L.deleted||[]),id])]});}
+  if(save.costume===id){save.costume='basic';writeSave();}moSel=null;myRenderOrder();toast('けしました',2);}
+function myUndeleteCostume(id){const L=myLayout()||{},st=myOrderState();mySaveLayoutDraft(st.ids,st.s2,{deleted:(L.deleted||[]).filter(x=>x!==id)});
+  /* もどした衣装は もとの 位置（並びに あれば その位置） */myRenderOrder();toast('もどしました',2);}
+function myRenderOrder(){const{ids,s2}=myOrderState(),list=$('moList');list.innerHTML='';loadImg(ATLAS.thumbs.file);
+  ids.forEach((id,i)=>{const c=CMAP[id];if(!c)return;const row=document.createElement('div');row.className='moRow'+(moSel===id?' sel':'')+(c.secret2?' hid':'');row.dataset.id=id;
+    const n=document.createElement('span');n.className='n';n.textContent=i+1;const cv=document.createElement('canvas');cv.width=80;cv.height=86;
+    const f=thumbFrame(thumbId(id));const paint=()=>{if(!cv.isConnected)return;const x=cv.getContext('2d');x.clearRect(0,0,80,86);x.imageSmoothingQuality='high';drawYasukoDetail(x,f,0,0,80,86);};loadImg(f.file).then(()=>requestAnimationFrame(paint));
+    const nm=document.createElement('span');nm.className='nm';const no=viewerArtNumber(id);nm.innerHTML=`${c.name.replace('\n','').replace(/</g,'&lt;')}<small>${no!=null?'No.'+no:'未実装の とりこみ'}${c.special?'・へんしん専用':''}</small>`;
+    row.append(n,cv,nm);
+    if(!c.special){const lb=document.createElement('label');const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!c.secret2;cb.onclick=e=>e.stopPropagation();
+      cb.onchange=()=>{const st=myOrderState();st.s2[id]=cb.checked;mySaveLayoutDraft(st.ids,st.s2);myRenderOrder();};lb.onclick=e=>e.stopPropagation();lb.append(cb,'ひみつ2');row.appendChild(lb);}
+    if(myCanDelete(id)){const d=document.createElement('button');d.className='btn warn del';d.textContent='けす';d.onclick=e=>{e.stopPropagation();myDeleteCostume(id);};row.appendChild(d);}
+    row.onclick=()=>{if(moSel&&moSel!==id){const st=myOrderState(),a=st.ids.indexOf(moSel),b=st.ids.indexOf(id);st.ids.splice(a,1);st.ids.splice(b,0,moSel);mySaveLayoutDraft(st.ids,st.s2);myRenderOrder();return;}
+      moSel=moSel===id?null:id;myRenderOrder();};
+    list.appendChild(row);});
+  /* けした 衣装 */
+  const dl=$('moDel'),gone=[...myDeletedIds()].filter(id=>MY_STASH.has(id)||myBuiltDeleted().has(id)),built=myBuiltDeleted();dl.innerHTML='';
+  if(gone.length){dl.innerHTML=`<h3>けした 衣装（${gone.length}）</h3>`;
+    gone.forEach(id=>{const row=document.createElement('div');row.className='moRow';row.dataset.del=id;const nm=document.createElement('span');nm.className='nm';
+      nm.innerHTML=`${myEsc0(myOrigName(id))}<small>${built.has(id)?'公開中の版で けしてあります（もどすには GitHub の「前の版に もどす」）':'次の「実装」で ファイルからも ぬけます'}</small>`;row.appendChild(nm);
+      if(!built.has(id)){const b=document.createElement('button');b.className='btn sub del';b.textContent='もどす';b.onclick=()=>myUndeleteCostume(id);row.appendChild(b);}
+      dl.appendChild(row);});}
+  const bar=$('moBar');if(!moSel){bar.classList.add('hidden');bar.innerHTML='';}else{const c=CMAP[moSel];bar.classList.remove('hidden');
+    bar.innerHTML=`<b>『${c.name.replace('\n','').replace(/</g,'&lt;')}』を うごかす（ほかの衣装を タップで そこへ）</b>`;
+    const mv=(t,f)=>{const b=document.createElement('button');b.className='btn sub';b.textContent=t;b.onclick=()=>{const st=myOrderState(),a=st.ids.indexOf(moSel);let to=f(a,st.ids.length);to=Math.max(0,Math.min(st.ids.length-1,to));st.ids.splice(a,1);st.ids.splice(to,0,moSel);mySaveLayoutDraft(st.ids,st.s2);myRenderOrder();};bar.appendChild(b);};
+    mv('▲',a=>a-1);mv('▼',a=>a+1);mv('いちばん上',()=>0);mv('いちばん下',(a,n)=>n-1);const done=document.createElement('button');done.className='btn';done.textContent='えらびおわる';done.onclick=()=>{moSel=null;myRenderOrder();};bar.appendChild(done);
+    const r=list.querySelector('.moRow.sel');if(r)r.scrollIntoView({block:'nearest'});}}
+/* 番号（マニュアルの 拡大鑑賞・衣装えらびの「No.」）を ふりなおす。衣装の ID・セーブ・能力は かわらない */
+function myRenumberPlan(mode){const arts=myArtIds();const nums={};
+  if(mode===0)arts.forEach((id,i)=>{nums[id]=i+1;});
+  else if(mode===1){const pos=new Map(arts.map((id,i)=>[id,i]));[...arts].sort((a,b)=>(viewerArtNumber(a)-viewerArtNumber(b))||(pos.get(a)-pos.get(b))).forEach((id,i)=>{nums[id]=i+1;});}
+  return nums;}
+$('moNum').onclick=async()=>{const k=await myChoose('番号を どう ふりなおしますか？<br><small>マニュアルの 拡大鑑賞と 衣装えらびの「No.」だけが かわります（衣装・セーブは そのまま）。素体の 絵は 最後に つきます。</small>',
+    ['いまの 並び順で 1から つける','すきまを つめる（けした 番号を つめる）','もとの 番号に もどす']);if(k<0)return;
+  const st=myOrderState();mySaveLayoutDraft(st.ids,st.s2,{numbers:k===2?{}:myRenumberPlan(k)});myRenderOrder();toast('番号を ふりなおしました',2.2);};
+$('moBack').onclick=()=>{moSel=null;showOnly(null);openMyImport({from:moFrom});};
+$('moBuilt').onclick=async()=>{if(!await myAsk('この端末の 並べかえ・けす・番号の 変更を やめて、公開中の 版に もどしますか？','もどす','やめる'))return;try{localStorage.removeItem(LAYOUT_KEY);}catch(e){}applyCostumeLayout();moSel=null;myRenderOrder();};
+$('moDefault').onclick=async()=>{if(!await myAsk('最初の 並び（v0.8.1 第3稿）と 最初の 第2のひみつに もどしますか？<br><small>けした 衣装と 番号は そのまま。実装すると 次の版にも 入ります</small>','もどす','やめる'))return;
+  const s2={};for(const c of [...COSTUMES,...MY_COSTUMES])if(c&&!c.special)s2[c.id]=mySecret2Default(c.id);mySaveLayoutDraft(myDefaultOrder(),s2);moSel=null;myRenderOrder();};
+
+/* ---- GitHub 自動配置 ---- */
+const MY_ASSEMBLE_PY="#!/usr/bin/env python3\n\"\"\"GitHub Actions step: join parts/index.html.partNNN byte-for-byte, verify SHA-256, write dist/index.html.\n\nThe parts are produced by tools/build_html.py from src/ (game.html + assets/).  Nothing here\nedits the game: if a part is missing, renamed, re-encoded or changed, the build stops and the\ncurrently published site stays as it is.\n\"\"\"\nfrom pathlib import Path\nimport hashlib\nimport re\nimport sys\n\nsrc = Path('parts')\nparts = sorted(src.glob('index.html.part*'))\nif not parts:\n    sys.exit('ERROR: no parts found in parts/')\nnumbers = []\nfor p in parts:\n    m = re.fullmatch(r'index\\.html\\.part(\\d{3})', p.name)\n    if not m:\n        sys.exit(f'ERROR: unexpected part name: {p.name}')\n    numbers.append(int(m.group(1)))\nif numbers != list(range(1, len(parts) + 1)):\n    sys.exit(f'ERROR: missing or out-of-order parts: {numbers}')\nraw = b''.join(p.read_bytes() for p in parts)\nsha_file = src / 'index.html.sha256'\nif not sha_file.exists():\n    sys.exit('ERROR: parts/index.html.sha256 missing')\nwanted = sha_file.read_text(encoding='ascii').split()[0].lower()\nactual = hashlib.sha256(raw).hexdigest()\nif actual != wanted:\n    sys.exit(f'ERROR: sha256 mismatch: wanted {wanted}, got {actual}')\nif not raw.startswith(b'<!DOCTYPE html>') or not raw.rstrip().endswith(b'<\/html>') or b'window.__ASSETS={' not in raw:\n    sys.exit('ERROR: assembled file does not look like the game index.html')\nout = Path('dist')\nout.mkdir(exist_ok=True)\n(out / 'index.html').write_bytes(raw)\nfor p in parts:\n    print(f'{p.name}: {p.stat().st_size} bytes')\nprint(f'OK: dist/index.html {len(raw)} bytes, sha256 {actual}')\n";
+function myGhCfg(){let c={};try{c=JSON.parse(localStorage.getItem(GH_KEY)||'{}')||{};}catch(e){}
+  if(!c.owner){const m=/^([a-z0-9-]+)\.github\.io$/i.exec(location.hostname);if(m){c.owner=m[1];const seg=location.pathname.split('/').filter(Boolean)[0];c.repo=c.repo||(seg&&!/\.html?$/.test(seg)?seg:m[1]+'.github.io');}}
+  return{owner:c.owner||'',repo:c.repo||'',branch:c.branch||'main',token:c.token||'',remember:c.remember!==false,auto:!!c.auto};}
+function myGhSaveCfg(c){const keep={owner:c.owner,repo:c.repo,branch:c.branch,remember:c.remember,auto:c.auto,...(c.remember&&c.token?{token:c.token}:{})};try{localStorage.setItem(GH_KEY,JSON.stringify(keep));}catch(e){}}
+let myGhToken='';/* おぼえない ときは この画面を ひらいている あいだだけ */
+function myGhForm(){const c=myGhCfg();return{owner:($('ghOwner').value||'').trim(),repo:($('ghRepo').value||'').trim(),branch:($('ghBranch').value||'').trim()||'main',token:($('ghToken').value||'').trim()||myGhToken||c.token,remember:$('ghRemember').checked,auto:$('ghAuto').checked};}
+function myGhMsg(status,j){const m=j&&j.message?`（${j.message}）`:'';return status===401?'トークンが ちがうか 期限切れです'+m:status===403?'権限が たりません。トークンに このリポジトリの Contents（読み書き）を つけてください'+m:status===404?'リポジトリか ブランチが 見つかりません（名前・トークンの 対象リポジトリを 確認）'+m:status===409||status===422?'GitHub に うけつけられませんでした'+m:`GitHub の エラー ${status}${m}`;}
+async function myGh(c,method,path,body){const r=await fetch('https://api.github.com'+path,{method,cache:'no-store',headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+c.token,'X-GitHub-Api-Version':'2022-11-28',...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
+  let j=null;try{j=await r.json();}catch(e){}if(!r.ok){const e=new Error(myGhMsg(r.status,j));e.status=r.status;throw e;}return j;}
+async function myGitSha(bytes){const head=new TextEncoder().encode('blob '+bytes.length+'\0'),all=myConcat([head,bytes]);const d=await crypto.subtle.digest('SHA-1',all);return Array.from(new Uint8Array(d),v=>v.toString(16).padStart(2,'0')).join('');}
+function myB64(bytes){return myDataUrl(bytes,'application/octet-stream').then(u=>u.slice(u.indexOf(',')+1));}
+async function myGhCheck(c){if(!c.owner||!c.repo||!c.token)throw new Error('ユーザー名・リポジトリ名・トークンを 入れてください');const R=`/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`;
+  const info=await myGh(c,'GET',R);if(info.permissions&&info.permissions.push===false)throw new Error('このトークンでは 書きこめません（Contents の 読み書きを つけてください）');
+  const ref=await myGh(c,'GET',`${R}/git/ref/heads/${encodeURIComponent(c.branch)}`);return{R,info,head:ref.object.sha};}
+/* 1回の コミットで parts（と ないときは scripts/assemble.py）を 置く。前の版は backup/<版>/ に のこす。
+   GitHub の parts が この版と ちがうときは 中止（とちゅうで 失敗しても 最後の ブランチ更新まで 公開には 影響しない） */
+async function myGhDeploy(pkg,c,progress){const enc=new TextEncoder();progress('GitHub の いまの ファイルを しらべています',0.04);const{R,head,base,ent}=await myGhTree(c);const P=pkg._P,K=pkg._K,oK=pkg._oldK,pad=k=>String(k).padStart(3,'0');
+  /* GitHub が この画面の 版と 同じか（共通パーツは 指紋、後半は 中身で） */
+  const badF=myFixedBad(ent,oK);if(badF.length)throw Object.assign(new Error(ent.has(`parts/index.html.part${pad(badF[0])}`)?`GitHub の 共通の パーツ（index.html.part${pad(badF[0])}${badF.length>1?' など':''}）が この画面の 版と ちがいます。`:`GitHub の parts に index.html.part${pad(badF[0])} が ありません。この版を 公開している リポジトリですか？`),{mismatch:true});
+  const old=pkg._old,oldN=Math.ceil(old.length/P);
+  for(let i=0;i<oldN;i++){const k=oK+1+i,e=ent.get(`parts/index.html.part${pad(k)}`),sha=await myGitSha(old.subarray(i*P,Math.min(old.length,(i+1)*P)));
+    if(!e||e.sha!==sha)throw Object.assign(new Error('GitHub の parts が この画面の 版と ちがいます（ほかで 更新された か、前の 配置が 公開に 失敗した かも）。'),{mismatch:true});}
+  const extra=myPartsIn(ent,'parts/').filter(k=>k>oK+oldN);if(extra.length)throw Object.assign(new Error('GitHub の parts が この版より 多いです（ほかで 更新された かも）。'),{mismatch:true});
+  const oldShaE=ent.get('parts/index.html.sha256'),oldShaSha=await myGitSha(enc.encode(`${pkg._oldSha}  index.html\n`));
+  if(oldShaE&&oldShaE.sha!==oldShaSha)throw Object.assign(new Error('GitHub の index.html.sha256 が この画面の 版と ちがいます。'),{mismatch:true});
+  /* 前の版の バックアップ（変わる パーツから 後ろ。同じ中身を 指すだけ） */
+  const bdir=`backup/${VERSION}`,bk=myBackupEntries(ent,bdir,K+1),entries=[...bk.entries];
+  entries.push({path:`${bdir}/README.txt`,mode:'100644',type:'blob',sha:await myGhBlob(c,R,enc.encode(MY_BACKUP_README(VERSION)),ent,`${bdir}/README.txt`)});
+  const files=[...pkg.parts.map((f,i)=>({path:'parts/'+f.name,size:f.size,data:()=>pkg._part(K+1+i)})),{path:'parts/index.html.sha256',size:pkg._shaFile.data.length,data:()=>pkg._shaFile.data}];const added=[];
+  if(!ent.has('scripts/assemble.py')&&MY_ASSEMBLE_PY){const a=enc.encode(MY_ASSEMBLE_PY);files.push({path:'scripts/assemble.py',size:a.length,data:()=>a});added.push('scripts/assemble.py');}
+  const hasWf=[...ent.keys()].some(p=>/^\.github\/workflows\/[^/]+\.ya?ml$/.test(p));
+  for(let i=0;i<files.length;i++){const f=files[i];progress(`アップロードしています ${i+1}/${files.length}（${(f.size/1048576).toFixed(1)}MB）`,0.1+0.75*i/files.length);
+    entries.push({path:f.path,mode:'100644',type:'blob',sha:await myGhBlob(c,R,f.data(),ent,f.path)});}
+  /* 小さく なった ときは 後ろの パーツを けす（backup には のこっている） */
+  for(const k of myPartsIn(ent,'parts/'))if(k>pkg.totalParts)entries.push({path:`parts/index.html.part${pad(k)}`,mode:'100644',type:'blob',sha:null});
+  progress('コミットしています',0.9);
+  entries.push(await myHistoryEntry(c,R,ent,{at:new Date().toISOString(),action:'deploy',version:pkg.ver,from:VERSION,backup:bdir,firstPart:K+1,totalParts:oK+oldN,newTotalParts:pkg.totalParts,bytesBefore:pkg.oldBytes,bytesAfter:pkg.newBytes,
+    sha256Before:pkg._oldSha,sha256After:pkg.sha,commitBefore:head,costumes:pkg.entries.map(e=>({no:pkg.dispNo[e.id]||e.no,name:e.name,id:e.id})),deleted:(pkg.deleted||[]).map((id,i)=>({id,name:pkg.deletedNames[i]}))},enc));
+  const msg=`やっこの冒険 ${pkg.ver}: ${myPkgSummary(pkg)}（ゲーム内から 自動配置。前の版 ${VERSION} は ${bdir}/）`;
+  const sha=await myCommitTree(c,R,base,head,entries,msg);
+  return{commit:sha,url:`https://github.com/${c.owner}/${c.repo}/commit/${sha}`,actions:`https://github.com/${c.owner}/${c.repo}/actions`,added,hasWf,files:files.length,backup:bdir};}
+/* 前の版に もどす（backup/<版>/ の 中身を parts へ。いまの parts も backup に のこしてから） */
+async function myGhRollback(c,item,progress){const enc=new TextEncoder();progress('GitHub を しらべています',0.1);const{R,head,base,ent}=await myGhTree(c);
+  const dir=item.backup,nums=myPartsIn(ent,dir+'/');if(!nums.length||!ent.has(dir+'/index.html.sha256'))throw new Error(dir+' に 復元用の ファイルが ありません');
+  const first=nums[0],total=item.totalParts||nums[nums.length-1];for(let k=first;k<=total;k++)if(!nums.includes(k))throw new Error('復元用の パーツが そろっていません');
+  for(let k=1;k<first;k++)if(!ent.has(`parts/index.html.part${String(k).padStart(3,'0')}`))throw new Error('共通の パーツが ありません');
+  const now=`backup/before-restore-${myStamp()}`,bk=myBackupEntries(ent,now,first),entries=[...bk.entries];
+  for(const k of nums){const p=String(k).padStart(3,'0');entries.push({path:`parts/index.html.part${p}`,mode:'100644',type:'blob',sha:ent.get(`${dir}/index.html.part${p}`).sha});}
+  entries.push({path:'parts/index.html.sha256',mode:'100644',type:'blob',sha:ent.get(dir+'/index.html.sha256').sha});
+  for(const k of myPartsIn(ent,'parts/'))if(k>total)entries.push({path:`parts/index.html.part${String(k).padStart(3,'0')}`,mode:'100644',type:'blob',sha:null});
+  progress('コミットしています',0.7);entries.push(await myHistoryEntry(c,R,ent,{at:new Date().toISOString(),action:'restore',version:item.from||item.version,restoredFrom:dir,backup:now,firstPart:first,totalParts:myPartsIn(ent,'parts/').slice(-1)[0],commitBefore:head},enc));
+  const sha=await myCommitTree(c,R,base,head,entries,`やっこの冒険: ${item.from||item.version} に もどす（${dir}/ から。もどす前の parts は ${now}/）`);
+  return{commit:sha,url:`https://github.com/${c.owner}/${c.repo}/commit/${sha}`,version:item.from||item.version};}
+/* GitHub の parts を いま ひらいている（ちゃんと うごいている）版に そろえる */
+async function myGhRepair(c,progress){const enc=new TextEncoder();progress('いまの版を 組み立てています',0.05);const cur=myCurrentParts();const{R,head,base,ent}=await myGhTree(c);
+  const pg=BUILD_INFO.partGit,pad=k=>String(k).padStart(3,'0'),bad=myFixedBad(ent,cur.K),bySha=new Set([...ent.values()].map(e=>e.sha)),fixed=[];
+  for(const k of bad){const want=pg&&pg[k-1];if(want&&bySha.has(want)){fixed.push({k,sha:want});continue;}/* backup などに 同じ中身が あれば それを 指す */
+    progress(`共通の パーツ part${pad(k)} を 組み立てています`,0.08);let data=null;if(want){const pre=(k-1)*cur.P<BUILD_INFO.chunkStart?await myPrefixSeg().catch(()=>null):null;data=myAssetBytes((k-1)*cur.P,k*cur.P,pre);}
+    if(!data||await myGitSha(data)!==want)throw new Error(`共通の パーツ index.html.part${pad(k)} が GitHub に ありません（または ちがいます）。復元用 zip か PC で もどしてください。`);fixed.push({k,data});}
+  const from=Math.min(cur.K+1,...bad),now=`backup/before-repair-${myStamp()}`,bk=myBackupEntries(ent,now,from),entries=[...bk.entries];
+  const files=[...fixed.map(f=>({name:'index.html.part'+pad(f.k),data:f.data,sha:f.sha})),...cur.parts,cur.shaFile];
+  for(let i=0;i<files.length;i++){progress(`アップロードしています ${i+1}/${files.length}`,0.15+0.7*i/files.length);const path='parts/'+files[i].name;entries.push({path,mode:'100644',type:'blob',sha:files[i].sha||await myGhBlob(c,R,files[i].data,ent,path)});}
+  for(const k of myPartsIn(ent,'parts/'))if(k>cur.total)entries.push({path:`parts/index.html.part${pad(k)}`,mode:'100644',type:'blob',sha:null});
+  entries.push(await myHistoryEntry(c,R,ent,{at:new Date().toISOString(),action:'repair',version:VERSION,backup:now,firstPart:from,totalParts:myPartsIn(ent,'parts/').slice(-1)[0]||cur.total,sha256After:cur.sha,commitBefore:head},enc));
+  const sha=await myCommitTree(c,R,base,head,entries,`やっこの冒険: GitHub の parts を ${VERSION} に そろえる（もとの parts は ${now}/）`);
+  return{commit:sha,url:`https://github.com/${c.owner}/${c.repo}/commit/${sha}`};}
+async function myGhHistory(c){const{R,ent}=await myGhTree(c);const h=await myGhReadJson(c,R,ent.get('backup/history.json'));
+  return((h&&h.items)||[]).filter(it=>it.backup&&myPartsIn(ent,it.backup+'/').length).map(it=>({...it}));}
+async function myWatchPublish(ver,el){/* 公開された（ファイルの 最後に 新しい版の 名前が 入った）か ときどき 見る */if(!/^https?:/.test(location.protocol))return;
+  for(let i=0;i<40;i++){await new Promise(r=>setTimeout(r,i?15000:5000));if(!el.isConnected)return;
+    try{const ctl=new AbortController(),r=await fetch(location.href.split('#')[0].split('?')[0]+'?v='+Date.now(),{headers:{Range:'bytes=-700000'},cache:'no-store',signal:ctl.signal});
+      if(r.status!==206){ctl.abort();el.textContent='数分 まってから ゲームを ひらきなおしてください。';return;}const t=await r.text();
+      if(t.includes(`const VERSION='${ver}'`)){el.innerHTML=`<b>${ver} が 公開されました！</b> <button class="btn" id="ghReload">ひらきなおす</button>`;$('ghReload').onclick=()=>location.reload();return;}
+      el.textContent=`GitHub で 公開の 準備中…（${Math.round((i+1)*15/60)}分）`;}catch(e){}}}
+/* ---- もしもの ための 復元（バックアップ・もとに もどす・この版に そろえる） ----
+   配置の たびに 前の版の パーツ（part0K+1〜）と sha256 を backup/<前の版>/ に 同じ中身のまま のこす（GitHub の中では 同じファイルは 1つとして あつかわれるので 容量は ふえない）。
+   part001〜part0K は 共通なので、これで 前の index.html を まるごと 復元できる。backup/history.json に 記録。 */
+function myAssetEls(){const BI=BUILD_INFO;if(!BI||BI.v!==1)throw new Error('この版は 開発用です');const all=[...document.scripts];const isAsset=s=>{const n=s.firstChild;return!!n&&n.nodeType===3&&n.length>31&&n.substringData(0,31)==='Object.assign(window.__ASSETS,{';};
+  const mainEl=all.find(s=>!isAsset(s)&&s.text.indexOf(MK_BI[0])>=0&&s.text.indexOf(MK_BM[0])>=0);if(!mainEl)throw new Error('ゲーム本体が 見つかりません');
+  const assets=all.slice(0,all.indexOf(mainEl)).filter(isAsset);if(assets.length!==BI.assetScripts)throw new Error('絵の部分の数が ちがいます');return{assets,mainEl};}
+/* いま ひらいている版の 絵の部分 = スクリプトの 並び（ファイル上の 位置つき）。大きな 文字は 長さだけ 見る */
+function myPageSegs(){const BI=BUILD_INFO,{assets,mainEl}=myAssetEls();const segs=[];let off=BI.chunkStart;
+  for(const el of assets){let L=0;for(const n of el.childNodes)if(n.nodeType===3)L+=n.length;L+=18;/* <script> と <\/script>\n */segs.push({off,len:L,el});off+=L;}
+  if(off!==BI.assetEnd)throw new Error('絵の部分の 大きさが 想定と ちがいます');return{segs,mainEl};}
+const myEncCache=[];
+function mySegData(g){if(g.bytes)return g.bytes;const c=myEncCache.find(x=>x.el===g.el);if(c)return c.b;const b=new TextEncoder().encode('<script>'+g.el.text+'<\/script>\n');if(b.length!==g.len)throw new Error('絵の部分の 文字が 想定と ちがいます');
+  myEncCache.unshift({el:g.el,b});myEncCache.length=Math.min(myEncCache.length,3);return b;}
+/* 部品の 並び（off 昇順・すきま なし）から ファイルの [a,b) を つくる */
+function myRangeBytes(list,a,b){const out=new Uint8Array(b-a);let lo=0,hi=list.length-1,w=0;while(lo<hi){const m=(lo+hi+1)>>1;if(list[m].off<=a)lo=m;else hi=m-1;}
+  for(let i=lo;i<list.length&&list[i].off<b;i++){const g=list[i];if(g.off+g.len<=a)continue;const x=mySegData(g),s0=Math.max(0,a-g.off),s1=Math.min(g.len,b-g.off);out.set(x.subarray(s0,s1),g.off+s0-a);w+=s1-s0;}
+  if(w!==b-a)throw new Error('組み立ての 範囲が たりません');return out;}
+/* ファイルの 先頭（ゲームの HTML。part001 の 前の方）だけは ページから つくれないので 公開中の ファイルから よむ（あとで 指紋で 確認） */
+async function myFetchPrefix(n){const r=await fetch(location.href.split('#')[0],{cache:'no-cache',headers:{Range:`bytes=0-${n-1}`}});if(!r.ok)throw new Error('公開中の ファイルを よめません（'+r.status+'）');
+  const rd=r.body.getReader(),out=new Uint8Array(n);let w=0;while(w<n){const{done,value}=await rd.read();if(done)break;const k=Math.min(value.length,n-w);out.set(value.subarray(0,k),w);w+=k;}try{await rd.cancel();}catch(e){}
+  if(w<n)throw new Error('公開中の ファイルが みじかすぎます');return out;}
+async function myPrefixSeg(){const BI=BUILD_INFO;return{off:0,len:BI.chunkStart,bytes:await myFetchPrefix(BI.chunkStart)};}
+/* ファイルの [a,b) を ページ内の 絵スクリプトから 組み立てる（絵の部分の 中だけ。pre を わたすと 先頭も） */
+function myAssetBytes(a,b,pre){const BI=BUILD_INFO;if(b>BI.assetEnd||(a<BI.chunkStart&&!pre))return null;const{segs}=myPageSegs();return myRangeBytes(pre?[pre,...segs]:segs,a,b);}
+/* 共通パーツ（part001〜part0K）の 指紋 = git の blob SHA-1。build_html.py と 実装の たびに BUILD_INFO.partGit に 記録 */
+function myFixedBad(ent,K){const pg=BUILD_INFO&&BUILD_INFO.partGit,bad=[];for(let k=1;k<=K;k++){const e=ent.get(`parts/index.html.part${String(k).padStart(3,'0')}`);if(!e||(pg&&pg.length>=k&&e.sha!==pg[k-1]))bad.push(k);}return bad;}
+function myCurrentParts(){/* いま ひらいている版の 後半パーツと sha256（実装パッケージと 同じ 組み立て） */const BI=BUILD_INFO;if(!BI||BI.v!==1)throw new Error('この版は 開発用です');
+  const P=BI.partBytes,enc=new TextEncoder(),{segs,mainEl}=myPageSegs();
+  const bytes=myConcat([myRangeBytes(segs,BI.T,BI.assetEnd),enc.encode(BI.postPrefix+mainEl.text+BI.postSuffix)]),st=MY_SHA.start({H:BI.mid,n:BI.T});MY_SHA.update(st,bytes);const sha=MY_SHA.finish(st);
+  const K=BI.T/P,parts=[];for(let p=0,k=K+1;p<bytes.length;p+=P,k++)parts.push({name:'index.html.part'+String(k).padStart(3,'0'),data:bytes.subarray(p,Math.min(bytes.length,p+P))});
+  return{P,K,parts,sha,shaFile:{name:'index.html.sha256',data:enc.encode(`${sha}  index.html\n`)},total:K+parts.length,bytes:BI.T+bytes.length};}
+/* zip を あとで つくる（大きな 版でも メモリを つかいすぎない）。size は できあがりと 同じ バイト数 */
+function myLazyZip(files,name){const enc=new TextEncoder();let size=22;for(const f of files){const n=enc.encode(f.name).length;size+=30+n+f.size+46+n;}
+  return{name,size,files:files.map(f=>f.name),make:async()=>new File([myZip(files.map(f=>({name:f.name,data:typeof f.data==='function'?f.data():f.data})))],name,{type:'application/zip'})};}
+async function myMakeFiles(zs){const out=[];for(const z of zs)out.push(z instanceof File?z:await z.make());return out;}
+
+/* スクリプトの 文字に key が あるか（大きな 文字は 何こかの テキストに わかれて いることが あるので さかいめも 見る） */
+function myElHas(el,key){let prev='';for(const n of el.childNodes){if(n.nodeType!==3)continue;const d=n.data;if(d.indexOf(key)>=0)return true;if(prev&&(prev+d.slice(0,key.length)).indexOf(key)>=0)return true;prev=d.slice(-key.length);}return false;}
+/* ---- 次の版を つくる（衣装を たす・けす・並び・番号）。v0.9.1 の myMakePackage の 置きかえ ----
+   けした衣装の 絵は ファイルから ぬく（後ろの パーツが 前に つまる）。変わり はじめる パーツの 前までは そのまま、
+   そこからは BUILD_INFO.partMid（パーツ境目ごとの SHA-256 途中状態）から 続きを 計算し、1パーツずつ つくる。 */
+function myDeletePlan(){const del=myDeletedIds(),built=myBuiltDeleted(),bi=new Set((Array.isArray(BUILTIN_MY)?BUILTIN_MY:[]).map(e=>e.id));
+  const builtin=[...del].filter(id=>bi.has(id)),orig=[...del].filter(id=>MY_ORIG.has(id)&&!built.has(id)).sort();
+  const keepUse=new Set();for(const [id,o] of MY_ORIG)if(!del.has(id))o.files.forEach(f=>keepUse.add(f));
+  const files=new Set();orig.forEach(id=>MY_ORIG.get(id).files.forEach(f=>{if(!keepUse.has(f))files.add(f);}));
+  return{builtin,orig,files};}
+function myPkgSummary(p){const a=[];if(p.entries.length)a.push(p.entries.map(e=>`No.${(p.dispNo&&p.dispNo[e.id])||e.no}『${e.name}』`).join('・')+' を 実装');if(p.deletedNames&&p.deletedNames.length)a.push(p.deletedNames.map(n=>`『${n}』`).join('・')+' を けす');
+  if(!a.length||p.layout)a.push('並べかえ・番号・第2のひみつ を 更新');return a.join('／');}
+function myImplNote(){if(!myLayoutChanged())return;const dp=myDeletePlan(),names=[...dp.builtin,...dp.orig].map(myOrigName);let h='<p>';
+  if(names.length)h+=`<b>けす 衣装</b>：${names.map(n=>'『'+myEsc(n)+'』').join('・')}（次の版で 絵も ファイルから ぬけて 小さく なります）<br>`;
+  if(dp.orig.length)h+='<small>元から ある 衣装を けすと、その 絵より 後ろの パーツが ぜんぶ 変わるので、アップロードが 大きく なります（GitHub に 自動で 配置 が おすすめ）。</small><br>';
+  h+='<b>並べかえ・番号・第2のひみつ</b>の 変更も 次の版に 入ります。</p>';$('miNote').insertAdjacentHTML('beforeend',h);}
+async function myMakePackage(ids,ver,progress){const BI=BUILD_INFO;if(!BI||BI.v!==1)throw new Error('この版は 開発用のため 実装パッケージを つくれません');
+  const P=BI.partBytes,enc=new TextEncoder(),oldK=BI.T/P;progress('いまの版を しらべています',0.03);
+  const{segs,mainEl}=myPageSegs();const oldTail=myRangeBytes(segs,BI.T,BI.assetEnd);
+  /* 公開中のファイルと くらべられるときは くらべる（ちがえば 中止） */
+  progress('公開中の ファイルと くらべています',0.06);const chk=await myVerifyTail(BI,oldTail);if(chk==='diff')throw new Error('公開中の ファイルが この画面の版と ちがいます。ページを 再読み込みしてから もう一度 つくってください');
+  /* けす 衣装 → 絵の スクリプトを はずす／チャンクから その絵だけ ぬく（PC の build_html.py と 同じ 形） */
+  const dp=myDeletePlan(),bset=new Set(dp.builtin),allB=Array.isArray(BUILTIN_MY)?BUILTIN_MY:[],keepB=allB.filter(e=>!bset.has(e.id)),bfile=new Map(allB.map(e=>[e.file,e.id]));
+  const nsegs=[];let first=Infinity,left=new Set(dp.files);
+  for(let gi=0;gi<segs.length;gi++){const g=segs[gi],n0=g.el.firstChild,head=n0.substringData(31,Math.min(240,n0.length-31)),m=/^"([^"]+)":"data:/.exec(head),bid=m&&bfile.get(m[1]);
+    if(bid&&bset.has(bid)){first=Math.min(first,g.off);continue;}
+    if(left.size&&!bid){progress('けす 絵を さがしています',0.08+0.1*gi/segs.length);let t=null;
+      for(const f of [...left]){const key=JSON.stringify(f)+':"data:';if(t===null){if(!myElHas(g.el,key))continue;t=g.el.text;}
+        const a=t.indexOf(key);if(a<0)continue;if(t.indexOf(key,a+1)>=0)throw new Error('けす 絵の 位置が わかりません: '+f);const b=t.indexOf('"',a+key.length)+1;
+        t=t[a-1]===','?t.slice(0,a-1)+t.slice(b):t[b]===','?t.slice(0,a)+t.slice(b+1):t.slice(0,a)+t.slice(b);left.delete(f);}
+      if(t!==null){const bytes=enc.encode('<script>'+t+'<\/script>\n');nsegs.push({len:bytes.length,bytes});first=Math.min(first,g.off);continue;}}
+    nsegs.push({len:g.len,el:g.el});}
+  if(left.size)throw new Error('けす 絵が ファイルに 見つかりません: '+[...left].join(', '));
+  /* 新しい衣装の 絵（1着 1スクリプト。PCの build_html.py と 同じ形） */
+  const entries=[],numFix={};let disp=myNextNumber(),intl=Math.max(111,...keepB.map(e=>e.no||0),myEffMax());
+  for(let k=0;k<ids.length;k++){progress(`衣装の絵を 組みこんでいます ${k+1}/${ids.length}`,0.2+0.3*k/ids.length);
+    const rec=await MyStore.get(ids[k]);if(!rec||!rec.sheet||!rec.title)throw new Error('衣装の データが 見つかりません');const fs=myCostumeFiles(rec);
+    const a=await myDataUrl(rec.sheet.buf,rec.sheet.type),b=await myDataUrl(rec.title.buf,rec.title.type);
+    const bytes=enc.encode('<script>Object.assign(window.__ASSETS,{'+JSON.stringify(fs.file)+':'+JSON.stringify(a)+','+JSON.stringify(fs.title)+':'+JSON.stringify(b)+'});<\/script>\n');nsegs.push({len:bytes.length,bytes});
+    const no=++intl,d=disp++;if(d!==no)numFix[rec.id]=d;
+    entries.push({id:rec.id,no,name:String(rec.name||'衣装').slice(0,20),file:fs.file,title:fs.title,ratio:rec.ratio||1,viewBox:rec.viewBox||[0,0,391,415],col:rec.col||'#9b2c46',trail:rec.trail||'#f6c1cc',since:ver});}
+  let off=BI.chunkStart;for(const g of nsegs){g.off=off;off+=g.len;}const E2=off,T2=Math.floor(E2/P)*P;
+  const S=Math.min(BI.T,Math.floor(Math.min(first,BI.assetEnd)/P)*P),K=S/P;
+  if(S<BI.T&&!(Array.isArray(BI.partMid)&&BI.partMid.length>=K&&Array.isArray(BI.partGit)))throw new Error('この版では 前の パーツの 衣装を けせません（PC で 作りなおした 版で けしてください）');
+  const pre=S<BI.chunkStart?await myPrefixSeg():null;
+  if(S<BI.T){/* 変わり はじめる パーツ（いまの版）が ちゃんと 組み立てられるか 指紋で 確認 */progress('いまの版を 確認しています',0.52);
+    const ob=myRangeBytes(pre?[pre,...segs]:segs,S,S+P);if(await myGitSha(ob)!==BI.partGit[K])throw new Error(`いまの版の part${String(K+1).padStart(3,'0')} を 組み立てられませんでした（公開中の ファイルと ちがう かも）`);}
+  const list=pre?[pre,...nsegs]:nsegs;
+  /* ハッシュ: S から 1パーツずつ（共通に なる パーツの 指紋と 途中状態も） */
+  const st=S===0?MY_SHA.start():MY_SHA.start({H:S===BI.T?BI.mid:BI.partMid[K-1],n:S});const pg=(BI.partGit||[]).slice(0,K),pm=(BI.partMid||[]).slice(0,K);
+  for(let k=K+1;k<=T2/P;k++){progress(`ハッシュを 計算しています（part${String(k).padStart(3,'0')}）`,0.55+0.25*(k-K)/Math.max(1,T2/P-K));const b=myRangeBytes(list,(k-1)*P,k*P);MY_SHA.update(st,b);pm.push(MY_SHA.mid(st).H);pg.push(await myGitSha(b));}
+  const mid2=MY_SHA.mid(st);if(E2>T2)MY_SHA.update(st,myRangeBytes(list,T2,E2));
+  /* 本体: 版・実装ずみ衣装・並び・次回用の情報だけ 書きかえる */
+  const oldMain=mainEl.text,oldPostBytes=enc.encode(BI.postPrefix+oldMain+BI.postSuffix),st0=MY_SHA.start({H:BI.mid,n:BI.T});MY_SHA.update(st0,oldTail);MY_SHA.update(st0,oldPostBytes);const oldSha=MY_SHA.finish(st0);
+  const cut=(t,mk,val)=>{const i=t.indexOf(mk[0]),j=t.indexOf(mk[1],i);if(i<0||j<0)throw new Error('本体の 目印が ありません');return t.slice(0,i+mk[0].length)+val+t.slice(j);};
+  const builtin=[...keepB,...entries];
+  let main=oldMain.replace(/const VERSION='[^']*', VERSION_NAME='[^']*';/,()=>`const VERSION='${ver}', VERSION_NAME='衣装${builtin.length}着 実装版';`);
+  if(main===oldMain)throw new Error('版の 目印が ありません');
+  main=cut(main,MK_BM,myJsonScript(builtin));
+  const L0=myLayout(),dr=myLayoutDraft();let lay='null';
+  if(L0){const L1={...L0,numbers:{...(L0.numbers||{}),...numFix}};lay=myLayoutText(L1,entries.map(e=>e.id),dp.builtin,dr&&dr.stamp);}
+  else if(Object.keys(numFix).length)lay=myLayoutText({order:myOrderIds(),secret2:{},numbers:numFix},entries.map(e=>e.id),dp.builtin);
+  main=cut(main,MK_LO,lay);
+  main=cut(main,MK_BI,myBIText({...BI,assetScripts:nsegs.length,assetEnd:E2,T:T2,mid:mid2.H,...(BI.partGit?{partGit:pg,partMid:pm}:{})}));
+  const post=enc.encode(BI.postPrefix+main+BI.postSuffix);MY_SHA.update(st,post);const sha=MY_SHA.finish(st);
+  const N2=E2+post.length,all=[...list,{off:E2,len:post.length,bytes:post}],total=Math.ceil(N2/P);
+  const parts=[];for(let k=K+1;k<=total;k++){const a=(k-1)*P,b=Math.min(N2,k*P);parts.push({name:'index.html.part'+String(k).padStart(3,'0'),size:b-a,k});}
+  const shaFile={name:'index.html.sha256',data:enc.encode(`${sha}  index.html\n`)};
+  const part=k=>myRangeBytes(all,(k-1)*P,Math.min(N2,k*P));
+  /* zip: 1つ 20MB まで（GitHub の ブラウザ アップロードは 1ファイル 25MiB まで）。中身は 保存する ときに つくる */
+  const groups=[];let cur=[],sz=0;for(const f of parts){if(cur.length&&sz+f.size>MY_ZIP_MAX){groups.push(cur);cur=[];sz=0;}cur.push(f);sz+=f.size;}cur.push(null);groups.push(cur);
+  const zips=groups.map((g,i)=>myLazyZip(g.map(f=>f?{name:f.name,size:f.size,data:()=>part(f.k)}:{name:shaFile.name,size:shaFile.data.length,data:shaFile.data}),`Yakko_${ver}_GitHub_${i+1}of${groups.length}.zip`));
+  /* いまの版（もどす 用）: part0K+1〜 */
+  const oldAll=[...(pre?[pre]:[]),...segs,{off:BI.assetEnd,len:oldPostBytes.length,bytes:oldPostBytes}],oldN=BI.assetEnd+oldPostBytes.length,oldTotal=Math.ceil(oldN/P);
+  const oldPart=k=>(k-1)*P<BI.chunkStart&&!pre?null:myRangeBytes(oldAll,(k-1)*P,Math.min(oldN,k*P));
+  const deletedNames=[...dp.builtin.map(id=>myOrigName(id)),...dp.orig.map(id=>myOrigName(id))];
+  return{_P:P,_K:K,_oldK:oldK,_old:myConcat([oldTail,oldPostBytes]),_oldSha:oldSha,_oldTotal:oldTotal,_oldPart:oldPart,_part:part,_shaFile:shaFile,
+    layout:myLayoutChanged(),ver,sha,entries,dispNo:Object.fromEntries(entries.map(e=>[e.id,numFix[e.id]||e.no])),deleted:[...dp.builtin,...dp.orig],deletedNames,
+    parts:parts.map(p=>({name:p.name,size:p.size})),firstPart:K+1,totalParts:total,zips,verified:chk,newBytes:N2,oldBytes:oldN};}
+
+function myRestoreZip(cur){return new File([myZip([...cur.parts,cur.shaFile])],`Yakko_${VERSION}_復元用.zip`,{type:'application/zip'});}
+async function myGhTree(c){const{R,head}=await myGhCheck(c);const commit=await myGh(c,'GET',`${R}/git/commits/${head}`),tree=await myGh(c,'GET',`${R}/git/trees/${commit.tree.sha}?recursive=1`);
+  return{R,head,base:commit.tree.sha,ent:new Map((tree.tree||[]).filter(e=>e.type==='blob').map(e=>[e.path,e]))};}
+async function myGhReadJson(c,R,e){if(!e)return null;try{const b=await myGh(c,'GET',`${R}/git/blobs/${e.sha}`);const bin=atob(String(b.content||'').replace(/\s/g,''));return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,ch=>ch.charCodeAt(0))));}catch(err){return null;}}
+async function myGhBlob(c,R,data,ent,path){const sha=await myGitSha(data);if(ent&&ent.has(path)&&ent.get(path).sha===sha)return sha;const b=await myGh(c,'POST',`${R}/git/blobs`,{content:await myB64(data),encoding:'base64'});if(b.sha!==sha)throw new Error('アップロードした 中身が 一致しません');return sha;}
+function myPartsIn(ent,prefix){const out=[];for(const p of ent.keys()){const m=new RegExp('^'+prefix.replace(/[.*+?^${}()|[\]\\/]/g,'\\$&')+'index\\.html\\.part(\\d{3})$').exec(p);if(m)out.push(+m[1]);}return out.sort((a,b)=>a-b);}
+function myStamp(){const d=new Date(),z=n=>String(n).padStart(2,'0');return`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;}
+/* いまの parts を backup/<名前>/ へ（中身は そのまま。容量は ふえない） */
+function myBackupEntries(ent,dir,first){const out=[],nums=myPartsIn(ent,'parts/').filter(k=>k>=first);
+  for(const k of nums){const p=`parts/index.html.part${String(k).padStart(3,'0')}`;out.push({path:`${dir}/index.html.part${String(k).padStart(3,'0')}`,mode:'100644',type:'blob',sha:ent.get(p).sha});}
+  const s=ent.get('parts/index.html.sha256');if(s)out.push({path:`${dir}/index.html.sha256`,mode:'100644',type:'blob',sha:s.sha});return{entries:out,nums};}
+const MY_BACKUP_README=v=>`やっこの冒険 ${v} の 復元用（自動バックアップ）\n\nもどしかた（ゲームが ひらけるとき）: ゲーム →「＋とりこむ」→「実装する」→「GitHub に 自動で 配置」→「前の版に もどす」。\n手で もどすとき: この フォルダの index.html.partNNN と index.html.sha256 を parts フォルダへ 同じ名前で アップロード（上書き）し、\nこの フォルダに ない 番号より 大きい parts/index.html.partNNN が あれば 削除して コミット。part001 から ここに ある いちばん小さい番号の 1つ前までは 共通です。\n`;
+async function myCommitTree(c,R,base,head,entries,msg){const nt=await myGh(c,'POST',`${R}/git/trees`,{base_tree:base,tree:entries});const nc=await myGh(c,'POST',`${R}/git/commits`,{message:msg,tree:nt.sha,parents:[head]});
+  await myGh(c,'PATCH',`${R}/git/refs/heads/${encodeURIComponent(c.branch)}`,{sha:nc.sha,force:false});return nc.sha;}
+async function myHistoryEntry(c,R,ent,item,enc){const hist=(await myGhReadJson(c,R,ent.get('backup/history.json')))||{note:'やっこの冒険 自動配置の 記録（新しい順）',items:[]};
+  hist.items=[item,...(hist.items||[])].slice(0,200);const data=enc.encode(JSON.stringify(hist,null,1)+'\n');return{path:'backup/history.json',mode:'100644',type:'blob',sha:await myGhBlob(c,R,data,ent,'backup/history.json')};}
+/* ---- 実装画面の GitHub パネル ---- */
+const myEsc=t=>String(t).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+function myRenderGhPanel(){let box=$('miGh');if(!box){box=document.createElement('details');box.id='miGh';$('scrMyImpl').querySelector('.card').appendChild(box);}
+  const c=myGhCfg(),has=!!(c.token||myGhToken);
+  box.innerHTML=`<summary>GitHub に 自動で 配置する</summary>
+   <p class="mcNote" style="font-size:13px;margin:4px 0">GitHub の「Settings → Developer settings → Fine-grained tokens」で、<b>このリポジトリだけ</b>・<b>Contents</b> を「Read and write」に した トークン（期限つき）を つくって 入れます。配置の前の版は GitHub の <code>backup/</code> に 自動で のこり、ここから もどせます。</p>
+   <label>ユーザー名 <input type="text" id="ghOwner" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+   <label>リポジトリ <input type="text" id="ghRepo" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+   <label>ブランチ <input type="text" id="ghBranch" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+   <label>トークン <input type="password" id="ghToken" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${has?'おぼえています（かえるときだけ 入力）':'github_pat_…'}"></label>
+   <label><input type="checkbox" id="ghRemember"> この端末に おぼえる（ほかの人も つかう 端末では はずす）</label>
+   <label><input type="checkbox" id="ghAuto"> 実装パッケージを つくったら そのまま 配置へ すすむ</label>
+   <div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0"><button class="btn sub moSmall" id="ghTest">つながるか ためす</button><button class="btn sub moSmall" id="ghHist">前の版に もどす…</button><button class="btn sub moSmall" id="ghRepair">GitHub を この版に そろえる</button><button class="btn sub moSmall" id="ghSaveNow">いまの版を この端末に 保存（復元用）</button><button class="btn sub moSmall" id="ghForget">トークンを わすれる</button></div>
+   <div id="miGhMsg"></div>`;
+  $('ghOwner').value=c.owner;$('ghRepo').value=c.repo;$('ghBranch').value=c.branch;$('ghRemember').checked=c.remember;$('ghAuto').checked=c.auto;if(c.owner&&c.repo&&has)box.open=false;
+  ['ghOwner','ghRepo','ghBranch','ghRemember','ghAuto'].forEach(id=>$(id).addEventListener('change',()=>{const f=myGhForm();myGhSaveCfg(f);}));
+  $('ghToken').addEventListener('change',()=>{const f=myGhForm();if(!f.remember)myGhToken=f.token;myGhSaveCfg(f);});
+  const say=(h,warn)=>{$('miGhMsg').innerHTML=warn?`<span class="miWarn">${h}</span>`:h;};
+  const need=()=>{const f=myGhForm();if(!f.owner||!f.repo||!f.token){say('ユーザー名・リポジトリ・トークンを 入れてください',true);return null;}myGhSaveCfg(f);if(!f.remember)myGhToken=f.token;return f;};
+  $('ghTest').onclick=async()=>{const f=need();if(!f)return;say('しらべています…');try{const t=await myGhTree(f);let note='';
+      try{const cur=myCurrentParts();let same=!myFixedBad(t.ent,cur.K).length;if(same)for(const p of [...cur.parts,cur.shaFile]){const e=t.ent.get('parts/'+p.name);if(!e||e.sha!==await myGitSha(p.data)){same=false;break;}}
+        const extra=myPartsIn(t.ent,'parts/').filter(k=>k>cur.total).length;note=same&&!extra?`GitHub の parts は この版（${VERSION}）と 一致しています。`:'<span class="miWarn">GitHub の parts が この版と ちがいます（公開待ち・ほかで 更新・前の 配置の 失敗 など）。</span>';}catch(e){note='（この版は 開発用なので 一致の 確認は できません）';}
+      const wf=[...t.ent.keys()].some(p=>/^\.github\/workflows\/[^/]+\.ya?ml$/.test(p));
+      say(`つながりました：${myEsc(f.owner)}/${myEsc(f.repo)}（${myEsc(f.branch)}）・parts ${myPartsIn(t.ent,'parts/').length}こ・${wf?'公開の 設定（workflow）あり':'<span class="miWarn">公開の 設定（.github/workflows）が ありません</span>'}<br>${note}`);}
+    catch(e){say(myEsc(e.message),true);}};
+  $('ghHist').onclick=async()=>{const f=need();if(!f)return;say('記録を よんでいます…');try{const items=await myGhHistory(f);if(!items.length){say('もどせる 前の版の 記録が ありません（まだ 自動配置を していない）');return;}
+      const lab=it=>`${it.action==='deploy'?(it.from||'?')+' に もどす（'+it.version+' を 配置する前）':it.action==='restore'?'もどす前の 状態に もどす（'+(it.version||'')+'）':'そろえる前の 状態に もどす'}・${(it.at||'').replace('T',' ').slice(0,16)}`;
+      const k=await myChoose('どの 版に もどしますか？<br><small>いまの parts も backup に のこしてから もどします</small>',items.map(lab));if(k<0){say('');return;}
+      if(!await myAsk(`GitHub を 「${myEsc(lab(items[k]))}」に します。よいですか？`,'もどす','やめる'))return;
+      myBusy(true,'もどしています',0.1);const r=await myGhRollback(f,items[k],(m,p)=>myBusy(true,m,p));myBusy(false);
+      say(`もどしました（<a href="${r.url}" target="_blank">コミット</a>）。<div id="ghPub">公開を まっています…</div>`);myWatchPublish(r.version,$('ghPub'));}
+    catch(e){myBusy(false);say(myEsc(e.message),true);}};
+  $('ghRepair').onclick=async()=>{const f=need();if(!f)return;if(!await myAsk(`GitHub の parts を いま ひらいている 版（${VERSION}）に そろえます。<br><small>公開に 失敗した ときなどに つかいます。いまの parts は backup に のこします。</small>`,'そろえる','やめる'))return;
+    try{myBusy(true,'そろえています',0.05);const r=await myGhRepair(f,(m,p)=>myBusy(true,m,p));myBusy(false);say(`そろえました（<a href="${r.url}" target="_blank">コミット</a>）。<div id="ghPub">公開を まっています…</div>`);myWatchPublish(VERSION,$('ghPub'));}
+    catch(e){myBusy(false);say(myEsc(e.message),true);}};
+  $('ghSaveNow').onclick=()=>{try{mySaveFiles([myRestoreZip(myCurrentParts())]);}catch(e){say(myEsc(e.message),true);}};
+  $('ghForget').onclick=()=>{myGhToken='';const c2=myGhCfg();myGhSaveCfg({...c2,token:'',remember:c2.remember});$('ghToken').value='';say('トークンを わすれました');myRenderGhPanel();};}
+function myRestoreZipFromPkg(pkg){const f=[],P=pkg._P;for(let k=pkg._K+1;k<=pkg._oldTotal;k++){const a=(k-1)*P,b=Math.min(pkg.oldBytes,k*P);f.push({name:'index.html.part'+String(k).padStart(3,'0'),size:b-a,data:()=>pkg._oldPart(k)});}
+  const sh=new TextEncoder().encode(`${pkg._oldSha}  index.html\n`);f.push({name:'index.html.sha256',size:sh.length,data:sh});return myLazyZip(f,`Yakko_${VERSION}_復元用.zip`);}
+const MY_RESTORE_ZIP_MAX=80*1048576;
+function myGhAfterPackage(pkg){const c=myGhCfg();if(!(c.owner&&c.repo&&(c.token||myGhToken)))return;const o=$('miOut'),b=document.createElement('button');b.className='btn';b.id='miGhDeploy';b.textContent='🚀 GitHub に 配置する（自動）';
+  o.insertBefore(b,o.firstChild.nextSibling);b.onclick=()=>myGhRunDeploy(pkg);if(c.auto)setTimeout(()=>myGhRunDeploy(pkg),50);}
+async function myGhRunDeploy(pkg){const c=myGhForm();if(!c.owner||!c.repo||!c.token){toast('GitHub の 設定（ユーザー名・リポジトリ・トークン）を 入れてください',4);$('miGh').open=true;return;}
+  myGhSaveCfg(c);if(!c.remember)myGhToken=c.token;const rz=myRestoreZipFromPkg(pkg),big=rz.size>MY_RESTORE_ZIP_MAX,up=pkg.parts.reduce((a,p)=>a+p.size,0);
+  const k=await myChoose(`GitHub（${myEsc(c.owner)}/${myEsc(c.repo)}・${myEsc(c.branch)}）に <b>${pkg.ver}</b> を 配置します（${myEsc(myPkgSummary(pkg))}・アップロード 約${myFmtMB(up)}）。<br><small>いまの版 ${VERSION} は GitHub の backup/${VERSION}/ と 記録に 自動で のこり、「前の版に もどす」で もどせます。${big?'復元用 zip は 大きい（'+myFmtMB(rz.size)+'）ので つくりません。':''}</small>`,big?['配置する']:['復元用 zip を この端末にも 保存してから 配置する','そのまま 配置する']);
+  if(k<0)return;if(!big&&k===0){try{await mySaveFiles([await rz.make()]);}catch(e){}}
+  let out=$('miGhOut');if(!out){out=document.createElement('div');out.id='miGhOut';$('miOut').insertBefore(out,$('miOut').firstChild.nextSibling);}
+  try{myBusy(true,'GitHub に 配置しています',0);const r=await myGhDeploy(pkg,c,(m,f)=>myBusy(true,m,f));myBusy(false);if($('miGhDeploy'))$('miGhDeploy').remove();
+    out.innerHTML=`<p><b>GitHub に 配置しました</b>（${r.files}ファイル${r.added.length?'・'+r.added.join('、')+' も 追加':''}）。前の版は <code>${r.backup}/</code> に のこしました。<a href="${r.url}" target="_blank">コミット</a>・<a href="${r.actions}" target="_blank">Actions</a></p>${r.hasWf?'':'<p class="miWarn">注意：.github/workflows に 公開の 設定が ありません。GitHub Pages の 設定を 確認してください。</p>'}<div id="ghPub">公開を まっています…</div>`;
+    myWatchPublish(pkg.ver,$('ghPub'));}
+  catch(e){myBusy(false);out.innerHTML=`<p class="miWarn">配置できませんでした：${myEsc(e.message)}</p><p style="font-size:13px">GitHub は 変わっていません（最後の 1手まで 進まなかったため）。</p>`+(e.mismatch?`<button class="btn sub" id="ghFix">GitHub を この版（${VERSION}）に そろえてから 配置する</button>`:'');
+    if(e.mismatch)$('ghFix').onclick=async()=>{if(!await myAsk(`GitHub の parts を この版に そろえてから ${pkg.ver} を 配置します。<br><small>いまの GitHub の parts は backup に のこります。</small>`,'そろえて 配置','やめる'))return;
+      try{myBusy(true,'そろえています',0.05);await myGhRepair(c,(m,p)=>myBusy(true,m,p));const r=await myGhDeploy(pkg,c,(m,f)=>myBusy(true,m,f));myBusy(false);
+        out.innerHTML=`<p><b>GitHub を そろえて 配置しました</b>。前の版は <code>${r.backup}/</code> に のこしました。<a href="${r.url}" target="_blank">コミット</a></p><div id="ghPub">公開を まっています…</div>`;myWatchPublish(pkg.ver,$('ghPub'));}
+      catch(e2){myBusy(false);out.innerHTML=`<p class="miWarn">${myEsc(e2.message)}</p>`;}};}}
+function myDrawBoxes(x,si,k){x.lineWidth=2;x.font='bold 14px sans-serif';
+  MI.figs.forEach((f,fi)=>{if(f.src!==si||!f.box)return;const[b0,b1,b2,b3]=f.box.map(v=>v*k);x.strokeStyle=f.isPortrait?'#2a7de1':'#c0392b';x.strokeRect(b0,b1,b2-b0,b3-b1);
+    x.fillStyle='rgba(255,255,255,.85)';x.fillRect(b0,b1,18,17);x.fillStyle=f.isPortrait?'#2a7de1':'#c0392b';x.fillText(String(fi+1),b0+3,b1+14);});}
 async function boot(){
-  loadSave();resize();$('titleVer').textContent=VERSION;$('verTag').textContent=`やっこの冒険 ${VERSION}`;
+  registerBuiltinMy();await myCostumesInit();myLayoutSync();applyCostumeLayout();loadSave();resize();$('titleVer').textContent=VERSION;$('verTag').textContent=`やっこの冒険 ${VERSION}`;
   const files=[ATLAS.thumbs.file,ATLAS.faces.file,ATLAS.cat.file,ATLAS.catpose.file,ATLAS.catface.file,ATLAS.poses.file,ATLAS.enemy.file,...(ATLAS.objects?[ATLAS.objects.file]:[]),...(ATLAS.goddessface?[ATLAS.goddessface.file]:[]),...Object.values(ATLAS.partner).map(p=>p.file),ATLAS.title,
     yInfo(save.costume).file,yInfo('base').file];
   $('loadMsg').textContent='もうすぐ はじまります';/* v8.3.21: ダウンロードは 0〜90%（ページ側）、絵の準備は 90〜100% */
